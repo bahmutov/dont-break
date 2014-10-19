@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 
+require('shelljs/global');
 require('lazy-ass');
 var check = require('check-more-types');
 var q = require('q');
 var install = require('npm-utils').install;
 la(check.fn(install), 'install should be a function', install);
+var npmTest = require('npm-utils').test;
+la(check.fn(npmTest), 'npm test should be a function', npmTest);
 var path = require('path');
 var fs = require('fs');
 
-var pkg = require('./package.json');
+var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 
 function getDependents() {
@@ -19,10 +22,41 @@ function getDependents() {
         return line.length;
       });
     })
-    .fail(function () {
+    .catch(function () {
       // the file does not exist probably
       return [];
     });
+}
+
+function testInFolder(folder) {
+  la(check.unemptyString(folder), 'expected folder', folder);
+  var cwd = process.cwd();
+  process.chdir(folder);
+  return npmTest().then(function () {
+    console.log('tests work in', folder);
+    return folder;
+  })
+  .catch(function (errors) {
+    console.error('tests did not work in', folder);
+    console.error(errors);
+    throw errors;
+  })
+  .finally(function () {
+    process.chdir(cwd);
+  });
+}
+
+function testCurrentModuleInDependent(dependentFolder) {
+  la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder);
+  var currentModuleName = pkg.name;
+  var fullPath = path.join(dependentFolder, 'node_modules/' + currentModuleName);
+  la(fs.existsSync(fullPath), 'cannot find', fullPath);
+
+  var cwd = process.cwd();
+  cp('-rf', cwd, fullPath);
+
+  console.log('copied', cwd, 'to', fullPath);
+  return dependentFolder;
 }
 
 function testDependent(dependent) {
@@ -41,7 +75,10 @@ function testDependent(dependent) {
     la(check.unemptyString(folder), 'expected folder', folder);
     la(fs.existsSync(folder), 'expected existing folder', folder);
     return folder;
-  });
+  })
+  .then(testInFolder)
+  .then(testCurrentModuleInDependent)
+  .then(testInFolder);
 }
 
 function testDependents(dependents) {
