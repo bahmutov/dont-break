@@ -1,6 +1,6 @@
 {
   "name": "dont-break",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Checks if current version of your package would break dependent projects",
   "main": "index.js",
   "scripts": {

@@ -38,7 +38,7 @@ function testInFolder(folder) {
   })
   .catch(function (errors) {
     console.error('tests did not work in', folder);
-    console.error(errors);
+    console.error('code', errors.code);
     throw errors;
   })
   .finally(function () {
@@ -52,10 +52,10 @@ function testCurrentModuleInDependent(dependentFolder) {
   var fullPath = path.join(dependentFolder, 'node_modules/' + currentModuleName);
   la(fs.existsSync(fullPath), 'cannot find', fullPath);
 
-  var cwd = process.cwd();
-  cp('-rf', cwd, fullPath);
+  var thisFolder = process.cwd() + '/*';
+  cp('-rf', thisFolder, fullPath);
 
-  console.log('copied', cwd, 'to', fullPath);
+  console.log('copied', thisFolder, 'to', fullPath);
   return dependentFolder;
 }
 
@@ -63,7 +63,7 @@ function testDependent(dependent) {
   la(check.unemptyString(dependent), 'invalid dependent', dependent);
   console.log('testing', dependent);
 
-  var toFolder = '/tmp/' + dependent + '-' + pkg.version;
+  var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + dependent;
 
   return install({
     name: dependent,
@@ -83,8 +83,13 @@ function testDependent(dependent) {
 
 function testDependents(dependents) {
   la(check.array(dependents), dependents);
-  var testers = dependents.map(testDependent);
-  return testers.reduce(q.when, q(true));
+  // var testers = dependents.map(testDependent);
+  // return testers.reduce(q.when, q(true));
+  return dependents.reduce(function (prev, dependent) {
+    return prev.then(function () {
+      return testDependent(dependent);
+    });
+  }, q(true));
 }
 
 function dontBreak() {
@@ -96,12 +101,20 @@ function dontBreak() {
       .then(function () {
         console.log('all dependents tested');
       });
+  }).then(function () {
+    console.log('PASS: Current version does not break dependents');
+  }, function () {
+    console.log('FAIL: Current version break dependents');
   }).done();
 }
 
-testDependent('dont-break-foo-user')
+dontBreak();
+
+// testDependent('dont-break-foo-user').done();
+/*
 .then(function (folder) {
   la(check.unemptyString(folder), 'expected install folder', folder);
   la(fs.existsSync(folder), 'cannot find install folder', folder);
   console.log('installed into folder', folder);
 }).done();
+*/
