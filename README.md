@@ -2,6 +2,8 @@
 
 Checks if the node module in the current folder breaks unit tests for specified dependent projects.
 
+[Relevant discussion at npm](https://github.com/npm/npm/issues/6510)
+
 ## Install
 
     npm install -g dont-break
