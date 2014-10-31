@@ -11,19 +11,14 @@ Checks if the node module in the current folder breaks unit tests for specified 
 2 projects.
 
 1. First project `foo` only exports single variable `module.exports = 'foo';`
-2. Second project `foo-user` depends on `foo`
+2. Second project `foo-user` depends on `foo`.
 
-    // foo-user package.json
-    "dependencies": {
-        "foo": "0.1.0"
-    }
-
-`foo-user` only works if it gets string `foo` from the module it depends on
+`foo-user` only works if it gets string `foo` from the module it depends on, like this:
 
     var str = require('foo');
     console.assert(str === 'foo', 'value of foo should be "foo", but is ' + str);
 
-`foo` has first releast 0.1.0 that works.
+`foo` has only a single release 0.1.0 that works for `foo-user` project.
 
 The author of `foo` changes code to be `module.exports = 'bar';` and releases it as 0.2.0.
 `foo-user` wants to use the latest `foo` so it updates its dependency, not expecting anything
