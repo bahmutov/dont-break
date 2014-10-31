@@ -68,13 +68,27 @@ function testDependent(dependent) {
   return install({
     name: dependent,
     prefix: toFolder
-  }).then(function () {
+  }).then(function formFullFolderName() {
     console.log('installed into', toFolder);
     return path.join(toFolder, 'lib/node_modules/' + dependent);
-  }).then(function (folder) {
+  }).then(function checkInstalledFolder(folder) {
     la(check.unemptyString(folder), 'expected folder', folder);
     la(fs.existsSync(folder), 'expected existing folder', folder);
     return folder;
+  })
+  .then(function installDependencies(folder) {
+    console.log('installing dev dependencies', folder);
+    var cwd = process.cwd();
+    process.chdir(folder);
+    return install({}).then(function () {
+      console.log('restoring current directory', cwd);
+      process.chdir(cwd);
+      return folder;
+    }, function (err) {
+      console.error('Could not install dependencies in', folder);
+      console.error(err);
+      throw err;
+    });
   })
   .then(testInFolder)
   .then(testCurrentModuleInDependent)
@@ -103,8 +117,9 @@ function dontBreak() {
       });
   }).then(function () {
     console.log('PASS: Current version does not break dependents');
-  }, function () {
+  }, function (err) {
     console.log('FAIL: Current version break dependents');
+    console.error(err.message);
   }).done();
 }
 
