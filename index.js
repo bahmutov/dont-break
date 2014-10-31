@@ -97,8 +97,6 @@ function testDependent(dependent) {
 
 function testDependents(dependents) {
   la(check.array(dependents), dependents);
-  // var testers = dependents.map(testDependent);
-  // return testers.reduce(q.when, q(true));
   return dependents.reduce(function (prev, dependent) {
     return prev.then(function () {
       return testDependent(dependent);
@@ -119,17 +117,8 @@ function dontBreak() {
     console.log('PASS: Current version does not break dependents');
   }, function (err) {
     console.log('FAIL: Current version break dependents');
-    console.error(err.message);
+    err && err.message && console.error(err.message);
   }).done();
 }
 
 dontBreak();
-
-// testDependent('dont-break-foo-user').done();
-/*
-.then(function (folder) {
-  la(check.unemptyString(folder), 'expected install folder', folder);
-  la(fs.existsSync(folder), 'cannot find install folder', folder);
-  console.log('installed into folder', folder);
-}).done();
-*/
