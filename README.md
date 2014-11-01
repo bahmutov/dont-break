@@ -12,12 +12,12 @@ Checks if the node module in the current folder breaks unit tests for specified 
 
 [dont-break-icon]: https://nodei.co/npm/dont-break.png?downloads=true
 [dont-break-url]: https://npmjs.org/package/dont-break
-[dont-break-ci-image]: https://travis-ci.org/kensho/dont-break.png?branch=master
-[dont-break-ci-url]: https://travis-ci.org/kensho/dont-break
-[dont-break-dependencies-image]: https://david-dm.org/kensho/dont-break.png
-[dont-break-dependencies-url]: https://david-dm.org/kensho/dont-break
-[dont-break-devdependencies-image]: https://david-dm.org/kensho/dont-break/dev-status.png
-[dont-break-devdependencies-url]: https://david-dm.org/kensho/dont-break#info=devDependencies
+[dont-break-ci-image]: https://travis-ci.org/bahmutov/dont-break.png?branch=master
+[dont-break-ci-url]: https://travis-ci.org/bahmutov/dont-break
+[dont-break-dependencies-image]: https://david-dm.org/bahmutov/dont-break.png
+[dont-break-dependencies-url]: https://david-dm.org/bahmutov/dont-break
+[dont-break-devdependencies-image]: https://david-dm.org/bahmutov/dont-break/dev-status.png
+[dont-break-devdependencies-url]: https://david-dm.org/bahmutov/dont-break#info=devDependencies
 
 ## Install
 
