@@ -2,7 +2,8 @@
 
 Checks if the node module in the current folder breaks unit tests for specified dependent projects.
 
-[Relevant discussion at npm](https://github.com/npm/npm/issues/6510)
+[Relevant discussion at npm](https://github.com/npm/npm/issues/6510), 
+[Do not break dependant modules](http://bahmutov.calepin.co/do-not-break-dependant-modules.html).
 
 [![NPM][dont-break-icon] ][dont-break-url]
 
