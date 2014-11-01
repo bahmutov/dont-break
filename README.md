@@ -4,6 +4,21 @@ Checks if the node module in the current folder breaks unit tests for specified 
 
 [Relevant discussion at npm](https://github.com/npm/npm/issues/6510)
 
+[![NPM][dont-break-icon] ][dont-break-url]
+
+[![Build status][dont-break-ci-image] ][dont-break-ci-url]
+[![dependencies][dont-break-dependencies-image] ][dont-break-dependencies-url]
+[![devdependencies][dont-break-devdependencies-image] ][dont-break-devdependencies-url]
+
+[dont-break-icon]: https://nodei.co/npm/dont-break.png?downloads=true
+[dont-break-url]: https://npmjs.org/package/dont-break
+[dont-break-ci-image]: https://travis-ci.org/kensho/dont-break.png?branch=master
+[dont-break-ci-url]: https://travis-ci.org/kensho/dont-break
+[dont-break-dependencies-image]: https://david-dm.org/kensho/dont-break.png
+[dont-break-dependencies-url]: https://david-dm.org/kensho/dont-break
+[dont-break-devdependencies-image]: https://david-dm.org/kensho/dont-break/dev-status.png
+[dont-break-devdependencies-url]: https://david-dm.org/kensho/dont-break#info=devDependencies
+
 ## Install
 
     npm install -g dont-break

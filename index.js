@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 require('shelljs/global');
+/* global cp */
+
 require('lazy-ass');
 var check = require('check-more-types');
 var q = require('q');
@@ -117,6 +119,7 @@ function dontBreak() {
     console.log('PASS: Current version does not break dependents');
   }, function (err) {
     console.log('FAIL: Current version break dependents');
+    // jshint -W030
     err && err.message && console.error(err.message);
   }).done();
 }
