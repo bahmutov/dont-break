@@ -1,5 +1,17 @@
 #!/usr/bin/env node
 
+(function checkForUpdates() {
+  var updateNotifier = require('update-notifier');
+  var pkg = require(__dirname + '/package.json');
+  var notifier = updateNotifier({
+    packageName: pkg.name,
+    packageVersion: pkg.version
+  });
+  if (notifier.update) {
+    notifier.notify();
+  }
+}());
+
 require('shelljs/global');
 /* global cp */
 

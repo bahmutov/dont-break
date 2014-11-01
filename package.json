@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if current version of your package would break dependent projects",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./index.js"
@@ -15,7 +15,8 @@
     "lazy-ass": "0.5.2",
     "npm-utils": "0.0.8",
     "q": "1.0.1",
-    "shelljs": "0.3.0"
+    "shelljs": "0.3.0",
+    "update-notifier": "0.2.2"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "0.10.0",
