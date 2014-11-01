@@ -39,6 +39,7 @@
   ],
   "license": "MIT",
   "main": "index.js",
+  "pre-commit": "npm test",
   "repository": {
     "type": "git",
     "url": "git@github.com:bahmutov/dont-break.git"
