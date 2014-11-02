@@ -21,7 +21,7 @@ var check = require('check-more-types');
 var program = require('commander');
 program
   .usage('dont-break')
-  .option('-t, --top', 'Top N dependent modules to check', parseInt)
+  .option('-t, --top <n>', 'Top N dependent modules to check', parseInt)
   .parse(process.argv);
 
 var q = require('q');
@@ -34,7 +34,22 @@ var fs = require('fs');
 var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 
+function getTopDependents(n) {
+  la(check.positiveNumber(n), 'invalid top dependents to check', n);
+  console.log('fetching top', n, 'dependent projects for', pkg.name);
+  var registry = require('npm-stats')();
+  registry.module(pkg.name).dependents(function (err, result) {
+    if (err) { throw err; }
+    console.log('modules dependent on', pkg.name, result);
+  });
+  return q([]);
+}
+
 function getDependents() {
+  if (check.number(program.top)) {
+    return getTopDependents(program.top);
+  }
+
   var read = require('fs').readFile;
   return q.nfcall(read, './.dont-break', 'utf-8')
     .then(function (text) {
