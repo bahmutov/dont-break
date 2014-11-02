@@ -38,11 +38,14 @@ function getTopDependents(n) {
   la(check.positiveNumber(n), 'invalid top dependents to check', n);
   console.log('fetching top', n, 'dependent projects for', pkg.name);
   var registry = require('npm-stats')();
-  registry.module(pkg.name).dependents(function (err, result) {
-    if (err) { throw err; }
-    console.log('modules dependent on', pkg.name, result);
+  var moduleInfo = registry.module(pkg.name);
+
+  return q.nmapply(moduleInfo, 'dependents').then(function (dependents) {
+    la(check.array(dependents),
+      'expected modules dependent on', pkg.name, 'to be array', dependents);
+    console.log('modules dependent on', pkg.name, dependents);
+    return dependents;
   });
-  return q([]);
 }
 
 function getDependents() {
