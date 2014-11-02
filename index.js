@@ -17,6 +17,13 @@ require('shelljs/global');
 
 require('lazy-ass');
 var check = require('check-more-types');
+
+var program = require('commander');
+program
+  .usage('dont-break')
+  .option('-t, --top', 'Top N dependent modules to check', parseInt)
+  .parse(process.argv);
+
 var q = require('q');
 var install = require('npm-utils').install;
 la(check.fn(install), 'install should be a function', install);
@@ -24,7 +31,6 @@ var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
 var path = require('path');
 var fs = require('fs');
-
 var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 
