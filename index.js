@@ -22,7 +22,7 @@ var program = require('commander');
 program
   .usage('dont-break')
   .option('-t, --top-downloads <n>',
-    'Fetch top (by downloads) N dependent modules to check', parseInt)
+    'Fetch top (by downloads) N dependent modules, save and check', parseInt)
   .parse(process.argv);
 
 var _ = require('lodash');
@@ -86,10 +86,9 @@ function getTopDependents(name, n) {
   return q.nmapply(npm.packages, 'depended', [name]).then(function (dependents) {
     la(check.array(dependents),
       'expected modules dependent on', name, 'to be array', dependents);
-    // console.log('modules dependent on', name, dependents);
+    console.log('module', name, 'has', dependents.length, 'dependents');
     var names = _.pluck(dependents, 'name');
-    // debug only, remove in prod
-    return _.first(names, 5);
+    return names;
   });
 }
 
@@ -108,24 +107,15 @@ function saveTopDependents(name, metric, n) {
     })
     .then(function saveToFile(topDependents) {
       la(check.arrayOfStrings(topDependents), 'expected list of top strings', topDependents);
-      var str = topDependents.join('\n');
+      var str = topDependents.join('\n') + '\n';
       return q.nfcall(write, dontBreakFilename, str, 'utf-8').then(function () {
         console.log('saved top', n, 'dependents for', name, 'by', metric, 'to', dontBreakFilename);
         return topDependents;
-      })
+      });
     });
 }
 
-function getDependents() {
-  var metric, n;
-  if (check.number(program.topDownloads)) {
-    metric = 'downloads';
-    n = program.topDownloads;
-  }
-  if (check.unemptyString(metric) && check.number(n)) {
-    return saveTopDependents(pkg.name, metric, n);
-  }
-
+function getDependentsFromFile() {
   return q.nfcall(read, dontBreakFilename, 'utf-8')
     .then(function (text) {
       return text.split('\n').filter(function (line) {
@@ -136,6 +126,22 @@ function getDependents() {
       // the file does not exist probably
       return [];
     });
+}
+
+function getDependents(name) {
+  var forName = name || pkg.name;
+  var firstStep;
+
+  var metric, n;
+  if (check.number(program.topDownloads)) {
+    metric = 'downloads';
+    n = program.topDownloads;
+  }
+  if (check.unemptyString(metric) && check.number(n)) {
+    firstStep = saveTopDependents(forName, metric, n);
+  }
+
+  return q(firstStep).then(getDependentsFromFile);
 }
 
 function testInFolder(folder) {
@@ -207,6 +213,7 @@ function testDependent(dependent) {
 
 function testDependents(dependents) {
   la(check.array(dependents), dependents);
+
   return dependents.reduce(function (prev, dependent) {
     return prev.then(function () {
       return testDependent(dependent);
@@ -233,7 +240,8 @@ function dontBreak() {
   }).done();
 }
 
-// dontBreak();
+dontBreak();
 // fetchDownloads('check-types').done();
 // getTopDependents('check-types', 5).done();
-saveTopDependents('check-types', 'downloads', 5).done();
+// saveTopDependents('check-types', 'downloads', 5).done();
+// getDependents('check-more-types').done();
