@@ -22,7 +22,9 @@ var program = require('commander');
 program
   .usage('dont-break')
   .option('-t, --top-downloads <n>',
-    'Fetch top (by downloads) N dependent modules, save and check', parseInt)
+    'Fetch N most downloaded dependent modules, save and check', parseInt)
+  .option('-s, --top-starred <n>',
+    'Fetch N most starred dependent modules, save and check', parseInt)
   .parse(process.argv);
 
 var _ = require('lodash');
@@ -39,6 +41,8 @@ var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 var dontBreakFilename = './.dont-break';
 
+// TODO(gleb): move top dependents logic into separate file or module
+
 var Registry = require('npm-registry');
 var npm = new Registry();
 
@@ -53,18 +57,36 @@ function sortByDownloads() {
   return names;
 }
 
-function fetchDownloads(metric, name) {
-  la(metric === 'downloads' || metric === 'stars', 'invalid metric', metric);
+function topDownloads(name) {
   la(check.unemptyString(name), 'invalid package name', name);
-
-  return q.nmapply(npm[metric], 'totals', ['last-week', name])
-    .then(function (stats) {
+  return q.nmapply(npm.downloads, 'totals', ['last-week', name])
+    .then(function statsToDownloads(stats) {
       la(check.array(stats) && stats.length === 1, 'expected single stats', stats);
       la(check.number(stats[0].downloads), 'invalid number of downloads', stats);
 
-      downloads[name] = stats[0].downloads;
-      console.log(name, 'has been downloaded', downloads[name], 'times');
+      var n = stats[0].downloads;
+      downloads[name] = n;
+      console.log(name, 'has been downloaded', n, 'times');
+      return n;
     });
+}
+
+function topStarred(name) {
+  la(check.unemptyString(name), 'invalid package name', name);
+  return q.nmapply(npm.packages, 'starred', [name])
+    .then(function usersToStarred(users) {
+      la(check.array(users), 'expected list of users that starred', name, 'not', users);
+      var n = users.length;
+      downloads[name] = n;
+      console.log(name, 'has been starred', n, 'times');
+      return n;
+    });
+}
+
+function fetchDownloads(metric, name) {
+  la(metric === 'downloads' || metric === 'starred', 'invalid metric', metric);
+  la(check.unemptyString(name), 'invalid package name', name);
+  return metric === 'downloads' ? topDownloads(name) : topStarred(name);
 }
 
 function fetchDownloadsForEachDependent(metric, dependents) {
@@ -136,6 +158,9 @@ function getDependents(name) {
   if (check.number(program.topDownloads)) {
     metric = 'downloads';
     n = program.topDownloads;
+  } else if (check.number(program.topStarred)) {
+    metric = 'starred';
+    n = program.topStarred;
   }
   if (check.unemptyString(metric) && check.number(n)) {
     firstStep = saveTopDependents(forName, metric, n);
@@ -225,7 +250,7 @@ function dontBreak() {
   return getDependents().then(function (dependents) {
     la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
     dependents = _.invoke(dependents, 'trim');
-    console.log('dependents', dependents);
+    console.log('testing dependents', dependents);
 
     return testDependents(dependents)
       .then(function () {

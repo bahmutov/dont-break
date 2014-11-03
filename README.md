@@ -28,9 +28,14 @@ Checks if the node module in the current folder breaks unit tests for specified 
 
 * Create `.dont-break` file in the root of your package, list module names (one per line) that you would like
 to test.
-* Alternative: run `dont-break --top-downloads <N>` to find top N most downloaded dependent modules, 
-save to `.dont-break` and check. This will overwrite `.dont-break` file.
 * Run `dont-break` any time to test latest version of each dependent module against the curent code
+
+Picking projects to test manually is a judgement call. Dont-break can fetch top N most downloaded
+or most starred dependent modules and save the list.
+* run `dont-break --top-downloads <N>` to find top N most downloaded dependent modules, 
+save to `.dont-break` and check. This will overwrite `.dont-break` file.
+* run `dont-break --top-starred <N>` to find top N most starred dependent modules,
+save to `.dont-break` and check.
 
 ## Example
 
