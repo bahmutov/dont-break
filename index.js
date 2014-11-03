@@ -37,6 +37,7 @@ var path = require('path');
 var fs = require('fs');
 var read = fs.readFile;
 var write = fs.writeFile;
+var stripComments = require('strip-json-comments');
 var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 var dontBreakFilename = './.dont-break';
@@ -129,7 +130,9 @@ function saveTopDependents(name, metric, n) {
     })
     .then(function saveToFile(topDependents) {
       la(check.arrayOfStrings(topDependents), 'expected list of top strings', topDependents);
-      var str = topDependents.join('\n') + '\n';
+      var str = '// top ' + n + ' most dependent modules by ' + metric + ' for ' + name +'\n';
+      str += '// data from NPM registry on ' + (new Date()).toDateString() + '\n';
+      str += topDependents.join('\n') + '\n';
       return q.nfcall(write, dontBreakFilename, str, 'utf-8').then(function () {
         console.log('saved top', n, 'dependents for', name, 'by', metric, 'to', dontBreakFilename);
         return topDependents;
@@ -140,6 +143,7 @@ function saveTopDependents(name, metric, n) {
 function getDependentsFromFile() {
   return q.nfcall(read, dontBreakFilename, 'utf-8')
     .then(function (text) {
+      text = stripComments(text);
       return text.split('\n').filter(function (line) {
         return line.trim().length;
       });
