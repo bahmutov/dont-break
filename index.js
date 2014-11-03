@@ -24,6 +24,7 @@ program
   .option('-t, --top <n>', 'Top N dependent modules to check', parseInt)
   .parse(process.argv);
 
+var _ = require('lodash');
 var q = require('q');
 var install = require('npm-utils').install;
 la(check.fn(install), 'install should be a function', install);
@@ -34,23 +35,72 @@ var fs = require('fs');
 var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 
-function getTopDependents(n) {
-  la(check.positiveNumber(n), 'invalid top dependents to check', n);
-  console.log('fetching top', n, 'dependent projects for', pkg.name);
-  var registry = require('npm-stats')();
-  var moduleInfo = registry.module(pkg.name);
+var Registry = require('npm-registry');
+var npm = new Registry();
 
-  return q.nmapply(moduleInfo, 'dependents').then(function (dependents) {
-    la(check.array(dependents),
-      'expected modules dependent on', pkg.name, 'to be array', dependents);
-    console.log('modules dependent on', pkg.name, dependents);
-    return dependents;
+var downloads = {};
+
+function sortByDownloads() {
+  var list = _.pairs(downloads);
+  // [[name, n], [name, n], ...]
+  var sorted = _.sortBy(list, '1').reverse();
+  // sorts by number, largest first
+  var names = _.map(sorted, '0');
+  return names;
+}
+
+function fetchDownloads(name) {
+  la(check.unemptyString(name), 'invalid package name', name);
+
+  return q.nmapply(npm.downloads, 'totals', ['last-week', name])
+    .then(function (stats) {
+      la(check.array(stats) && stats.length === 1, 'expected single stats', stats);
+      la(check.number(stats[0].downloads), 'invalid number of downloads', stats);
+
+      downloads[name] = stats[0].downloads;
+      console.log(name, 'has been downloaded', downloads[name], 'times');
+    });
+}
+
+function fetchDownloadsForEachDependent(dependents) {
+  la(check.arrayOfStrings(dependents), dependents);
+
+  var actions = dependents.map(function (name) {
+    return _.partial(fetchDownloads, name);
   });
+  console.log('preparing number of downloads for dependents', dependents);
+
+  var fetchSequence = actions.reduce(q.when, q());
+  return fetchSequence;
+}
+
+function getTopDependents(name, n) {
+  la(check.unemptyString(name), 'missing package name');
+  la(check.positiveNumber(n), 'invalid top dependents to check', n);
+  console.log('fetching top', n, 'dependent projects for', name);
+
+  return q.nmapply(npm.packages, 'depended', [name]).then(function (dependents) {
+    la(check.array(dependents),
+      'expected modules dependent on', name, 'to be array', dependents);
+    // console.log('modules dependent on', name, dependents);
+    var names = _.pluck(dependents, 'name');
+    return _.first(names, 5);
+  });
+}
+
+function saveTopDependents(name, n) {
+  return getTopDependents(name, n)
+    .then(fetchDownloadsForEachDependent)
+    .then(sortByDownloads)
+    .then(function (dependents) {
+      la(check.array(dependents), 'cannot select top n, not a list', dependents);
+      return _.first(dependents, program.top);
+    });
 }
 
 function getDependents() {
   if (check.number(program.top)) {
-    return getTopDependents(program.top);
+    return saveTopDependents(pkg.name, program.top);
   }
 
   var read = require('fs').readFile;
@@ -160,4 +210,7 @@ function dontBreak() {
   }).done();
 }
 
-dontBreak();
+// dontBreak();
+// fetchDownloads('check-types').done();
+// getTopDependents('check-types', 5).done();
+saveTopDependents('check-types', 5).done();
