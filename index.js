@@ -33,8 +33,11 @@ var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
 var path = require('path');
 var fs = require('fs');
+var read = fs.readFile;
+var write = fs.writeFile;
 var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
+var dontBreakFilename = './.dont-break';
 
 var Registry = require('npm-registry');
 var npm = new Registry();
@@ -85,6 +88,7 @@ function getTopDependents(name, n) {
       'expected modules dependent on', name, 'to be array', dependents);
     // console.log('modules dependent on', name, dependents);
     var names = _.pluck(dependents, 'name');
+    // debug only, remove in prod
     return _.first(names, 5);
   });
 }
@@ -100,7 +104,15 @@ function saveTopDependents(name, metric, n) {
     .then(sortByDownloads)
     .then(function (dependents) {
       la(check.array(dependents), 'cannot select top n, not a list', dependents);
-      return _.first(dependents, program.top);
+      return _.first(dependents, n);
+    })
+    .then(function saveToFile(topDependents) {
+      la(check.arrayOfStrings(topDependents), 'expected list of top strings', topDependents);
+      var str = topDependents.join('\n');
+      return q.nfcall(write, dontBreakFilename, str, 'utf-8').then(function () {
+        console.log('saved top', n, 'dependents for', name, 'by', metric, 'to', dontBreakFilename);
+        return topDependents;
+      })
     });
 }
 
@@ -114,11 +126,10 @@ function getDependents() {
     return saveTopDependents(pkg.name, metric, n);
   }
 
-  var read = require('fs').readFile;
-  return q.nfcall(read, './.dont-break', 'utf-8')
+  return q.nfcall(read, dontBreakFilename, 'utf-8')
     .then(function (text) {
       return text.split('\n').filter(function (line) {
-        return line.length;
+        return line.trim().length;
       });
     })
     .catch(function () {
@@ -206,6 +217,7 @@ function testDependents(dependents) {
 function dontBreak() {
   return getDependents().then(function (dependents) {
     la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
+    dependents = _.invoke(dependents, 'trim');
     console.log('dependents', dependents);
 
     return testDependents(dependents)
