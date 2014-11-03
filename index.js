@@ -21,7 +21,8 @@ var check = require('check-more-types');
 var program = require('commander');
 program
   .usage('dont-break')
-  .option('-t, --top <n>', 'Top N dependent modules to check', parseInt)
+  .option('-t, --top-downloads <n>',
+    'Fetch top (by downloads) N dependent modules to check', parseInt)
   .parse(process.argv);
 
 var _ = require('lodash');
@@ -49,10 +50,11 @@ function sortByDownloads() {
   return names;
 }
 
-function fetchDownloads(name) {
+function fetchDownloads(metric, name) {
+  la(metric === 'downloads' || metric === 'stars', 'invalid metric', metric);
   la(check.unemptyString(name), 'invalid package name', name);
 
-  return q.nmapply(npm.downloads, 'totals', ['last-week', name])
+  return q.nmapply(npm[metric], 'totals', ['last-week', name])
     .then(function (stats) {
       la(check.array(stats) && stats.length === 1, 'expected single stats', stats);
       la(check.number(stats[0].downloads), 'invalid number of downloads', stats);
@@ -62,11 +64,10 @@ function fetchDownloads(name) {
     });
 }
 
-function fetchDownloadsForEachDependent(dependents) {
-  la(check.arrayOfStrings(dependents), dependents);
-
+function fetchDownloadsForEachDependent(metric, dependents) {
+  la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
   var actions = dependents.map(function (name) {
-    return _.partial(fetchDownloads, name);
+    return _.partial(fetchDownloads, metric, name);
   });
   console.log('preparing number of downloads for dependents', dependents);
 
@@ -88,9 +89,14 @@ function getTopDependents(name, n) {
   });
 }
 
-function saveTopDependents(name, n) {
+function saveTopDependents(name, metric, n) {
+  la(check.unemptyString(name), 'invalid package name', name);
+  la(check.unemptyString(metric), 'invalid metric', metric);
+  la(check.positiveNumber(n), 'invalid top number', n);
+
+  var fetchTop = _.partial(fetchDownloadsForEachDependent, metric);
   return getTopDependents(name, n)
-    .then(fetchDownloadsForEachDependent)
+    .then(fetchTop)
     .then(sortByDownloads)
     .then(function (dependents) {
       la(check.array(dependents), 'cannot select top n, not a list', dependents);
@@ -99,8 +105,13 @@ function saveTopDependents(name, n) {
 }
 
 function getDependents() {
-  if (check.number(program.top)) {
-    return saveTopDependents(pkg.name, program.top);
+  var metric, n;
+  if (check.number(program.topDownloads)) {
+    metric = 'downloads';
+    n = program.topDownloads;
+  }
+  if (check.unemptyString(metric) && check.number(n)) {
+    return saveTopDependents(pkg.name, metric, n);
   }
 
   var read = require('fs').readFile;
@@ -213,4 +224,4 @@ function dontBreak() {
 // dontBreak();
 // fetchDownloads('check-types').done();
 // getTopDependents('check-types', 5).done();
-saveTopDependents('check-types', 5).done();
+saveTopDependents('check-types', 'downloads', 5).done();
