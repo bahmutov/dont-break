@@ -17,6 +17,15 @@ require('shelljs/global');
 
 require('lazy-ass');
 var check = require('check-more-types');
+
+var program = require('commander');
+program
+  .usage('dont-break')
+  .option('-t, --top-downloads <n>',
+    'Fetch top (by downloads) N dependent modules, save and check', parseInt)
+  .parse(process.argv);
+
+var _ = require('lodash');
 var q = require('q');
 var install = require('npm-utils').install;
 la(check.fn(install), 'install should be a function', install);
@@ -24,22 +33,115 @@ var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
 var path = require('path');
 var fs = require('fs');
-
+var read = fs.readFile;
+var write = fs.writeFile;
 var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
+var dontBreakFilename = './.dont-break';
 
-function getDependents() {
-  var read = require('fs').readFile;
-  return q.nfcall(read, './.dont-break', 'utf-8')
+var Registry = require('npm-registry');
+var npm = new Registry();
+
+var downloads = {};
+
+function sortByDownloads() {
+  var list = _.pairs(downloads);
+  // [[name, n], [name, n], ...]
+  var sorted = _.sortBy(list, '1').reverse();
+  // sorts by number, largest first
+  var names = _.map(sorted, '0');
+  return names;
+}
+
+function fetchDownloads(metric, name) {
+  la(metric === 'downloads' || metric === 'stars', 'invalid metric', metric);
+  la(check.unemptyString(name), 'invalid package name', name);
+
+  return q.nmapply(npm[metric], 'totals', ['last-week', name])
+    .then(function (stats) {
+      la(check.array(stats) && stats.length === 1, 'expected single stats', stats);
+      la(check.number(stats[0].downloads), 'invalid number of downloads', stats);
+
+      downloads[name] = stats[0].downloads;
+      console.log(name, 'has been downloaded', downloads[name], 'times');
+    });
+}
+
+function fetchDownloadsForEachDependent(metric, dependents) {
+  la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
+  var actions = dependents.map(function (name) {
+    return _.partial(fetchDownloads, metric, name);
+  });
+  console.log('preparing number of downloads for dependents', dependents);
+
+  var fetchSequence = actions.reduce(q.when, q());
+  return fetchSequence;
+}
+
+function getTopDependents(name, n) {
+  la(check.unemptyString(name), 'missing package name');
+  la(check.positiveNumber(n), 'invalid top dependents to check', n);
+  console.log('fetching top', n, 'dependent projects for', name);
+
+  return q.nmapply(npm.packages, 'depended', [name]).then(function (dependents) {
+    la(check.array(dependents),
+      'expected modules dependent on', name, 'to be array', dependents);
+    console.log('module', name, 'has', dependents.length, 'dependents');
+    var names = _.pluck(dependents, 'name');
+    return names;
+  });
+}
+
+function saveTopDependents(name, metric, n) {
+  la(check.unemptyString(name), 'invalid package name', name);
+  la(check.unemptyString(metric), 'invalid metric', metric);
+  la(check.positiveNumber(n), 'invalid top number', n);
+
+  var fetchTop = _.partial(fetchDownloadsForEachDependent, metric);
+  return getTopDependents(name, n)
+    .then(fetchTop)
+    .then(sortByDownloads)
+    .then(function (dependents) {
+      la(check.array(dependents), 'cannot select top n, not a list', dependents);
+      return _.first(dependents, n);
+    })
+    .then(function saveToFile(topDependents) {
+      la(check.arrayOfStrings(topDependents), 'expected list of top strings', topDependents);
+      var str = topDependents.join('\n') + '\n';
+      return q.nfcall(write, dontBreakFilename, str, 'utf-8').then(function () {
+        console.log('saved top', n, 'dependents for', name, 'by', metric, 'to', dontBreakFilename);
+        return topDependents;
+      });
+    });
+}
+
+function getDependentsFromFile() {
+  return q.nfcall(read, dontBreakFilename, 'utf-8')
     .then(function (text) {
       return text.split('\n').filter(function (line) {
-        return line.length;
+        return line.trim().length;
       });
     })
     .catch(function () {
       // the file does not exist probably
       return [];
     });
+}
+
+function getDependents(name) {
+  var forName = name || pkg.name;
+  var firstStep;
+
+  var metric, n;
+  if (check.number(program.topDownloads)) {
+    metric = 'downloads';
+    n = program.topDownloads;
+  }
+  if (check.unemptyString(metric) && check.number(n)) {
+    firstStep = saveTopDependents(forName, metric, n);
+  }
+
+  return q(firstStep).then(getDependentsFromFile);
 }
 
 function testInFolder(folder) {
@@ -111,6 +213,7 @@ function testDependent(dependent) {
 
 function testDependents(dependents) {
   la(check.array(dependents), dependents);
+
   return dependents.reduce(function (prev, dependent) {
     return prev.then(function () {
       return testDependent(dependent);
@@ -121,6 +224,7 @@ function testDependents(dependents) {
 function dontBreak() {
   return getDependents().then(function (dependents) {
     la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
+    dependents = _.invoke(dependents, 'trim');
     console.log('dependents', dependents);
 
     return testDependents(dependents)
@@ -137,3 +241,7 @@ function dontBreak() {
 }
 
 dontBreak();
+// fetchDownloads('check-types').done();
+// getTopDependents('check-types', 5).done();
+// saveTopDependents('check-types', 'downloads', 5).done();
+// getDependents('check-more-types').done();
