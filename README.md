@@ -24,6 +24,14 @@ Checks if the node module in the current folder breaks unit tests for specified 
 
     npm install -g dont-break
 
+## Use
+
+* Create `.dont-break` file in the root of your package, list module names (one per line) that you would like
+to test.
+* Alternative: run `dont-break --top-downloads <N>` to find top N most downloaded dependent modules, 
+save to `.dont-break` and check. This will overwrite `.dont-break` file.
+* Run `dont-break` any time to test latest version of each dependent module against the curent code
+
 ## Example
 
 2 projects.
