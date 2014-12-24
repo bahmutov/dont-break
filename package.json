@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if current version of your package would break dependent projects",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./index.js"
