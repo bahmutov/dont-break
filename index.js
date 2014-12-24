@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 (function checkForUpdates() {
-  var pkg = require('./package.json');
+  var thisPackage = require('./package.json');
   require('update-notifier')({
-    packageName: pkg.name,
-    packageVersion: pkg.version
+    packageName: thisPackage.name,
+    packageVersion: thisPackage.version
   }).notify();
 }());
 
@@ -126,7 +126,7 @@ function saveTopDependents(name, metric, n) {
     })
     .then(function saveToFile(topDependents) {
       la(check.arrayOfStrings(topDependents), 'expected list of top strings', topDependents);
-      var str = '// top ' + n + ' most dependent modules by ' + metric + ' for ' + name +'\n';
+      var str = '// top ' + n + ' most dependent modules by ' + metric + ' for ' + name + '\n';
       str += '// data from NPM registry on ' + (new Date()).toDateString() + '\n';
       str += topDependents.join('\n') + '\n';
       return q.nfcall(write, dontBreakFilename, str, 'utf-8').then(function () {
@@ -260,8 +260,9 @@ function dontBreak() {
     console.log('PASS: Current version does not break dependents');
   }, function (err) {
     console.log('FAIL: Current version break dependents');
-    // jshint -W030
-    err && err.message && console.error(err.message);
+    if (err && err.message) {
+      console.error(err.message);
+    }
   }).done();
 }
 

@@ -1,17 +1,32 @@
 module.exports = function(grunt) {
   'use strict';
 
+  var sourceFiles = ['index.js', 'src/**/*.js'];
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
     jshint: {
-      all: [
-        'index.js', 'src/**/*.js'
-      ],
+      all: sourceFiles,
       specs: ['test/*.js'],
       options: {
         jshintrc: '.jshintrc',
         reporter: require('jshint-summary')
+      }
+    },
+
+    eslint: {
+      target: sourceFiles,
+      options: {
+        config: 'eslint.json',
+        rulesdir: ['./node_modules/eslint-rules']
+      }
+    },
+
+    jscs: {
+      src: sourceFiles,
+      options: {
+          config: 'jscs.json'
       }
     },
 
@@ -29,6 +44,7 @@ module.exports = function(grunt) {
   var plugins = require('matchdep').filterDev('grunt-*');
   plugins.forEach(grunt.loadNpmTasks);
 
+  grunt.registerTask('lint', ['jshint', 'eslint', 'jscs']);
   grunt.registerTask('default',
-    ['nice-package', 'deps-ok', 'jshint']);
+    ['nice-package', 'deps-ok', 'lint']);
 };
