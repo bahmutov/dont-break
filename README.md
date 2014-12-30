@@ -115,6 +115,9 @@ Spread the word: tweet, star on github, etc.
 Support: if you find any problems with this module, email / tweet /
 [open issue](https://github.com/bahmutov/dont-break/issues?state=open) on Github
 
+Implemented using [npm-registry](https://github.com/3rd-Eden/npmjs),
+[lazy-ass](https://github.com/bahmutov/lazy-ass) and [npm-utils](https://github.com/bahmutov/npm-utils).
+
 ## MIT License
 
 Copyright (c) 2014 Gleb Bahmutov
