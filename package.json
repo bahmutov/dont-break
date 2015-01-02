@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if current version of your package would break dependent projects",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./index.js"
@@ -12,7 +12,7 @@
   "contributors": [],
   "dependencies": {
     "check-more-types": "1.1.1",
-    "check-types": "2.1.1",
+    "check-types": "1.4.0",
     "commander": "2.6.0",
     "lazy-ass": "0.5.3",
     "lodash": "2.4.1",
@@ -55,6 +55,7 @@
     "url": "git@github.com:bahmutov/dont-break.git"
   },
   "scripts": {
-    "test": "grunt"
+    "test": "grunt && npm run show-help",
+    "show-help": "node index.js --help"
   }
 }
