@@ -13,6 +13,7 @@ require('shelljs/global');
 
 require('lazy-ass');
 var check = require('check-more-types');
+var quote = require('quote');
 
 var program = require('commander');
 program
@@ -194,6 +195,7 @@ function testCurrentModuleInDependent(dependentFolder) {
   la(fs.existsSync(fullPath), 'cannot find', fullPath);
 
   var thisFolder = process.cwd() + '/*';
+  console.log('Copying folder', quote(thisFolder), '\nto folder', quote(fullPath));
   cp('-rf', thisFolder, fullPath);
 
   console.log('copied', thisFolder, 'to', fullPath);
