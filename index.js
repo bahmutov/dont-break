@@ -29,88 +29,22 @@ var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 var dontBreakFilename = './.dont-break';
 
-// TODO(gleb): move top dependents logic into separate file or module
-
-var Registry = require('npm-registry');
-var npm = new Registry();
-
-var downloads = {};
-
-function sortByDownloads() {
-  var list = _.pairs(downloads);
-  // [[name, n], [name, n], ...]
-  var sorted = _.sortBy(list, '1').reverse();
-  // sorts by number, largest first
-  var names = _.map(sorted, '0');
-  return names;
-}
-
-function topDownloads(name) {
-  la(check.unemptyString(name), 'invalid package name', name);
-  return q.nmapply(npm.downloads, 'totals', ['last-week', name])
-    .then(function statsToDownloads(stats) {
-      la(check.array(stats) && stats.length === 1, 'expected single stats', stats);
-      la(check.number(stats[0].downloads), 'invalid number of downloads', stats);
-
-      var n = stats[0].downloads;
-      downloads[name] = n;
-      console.log(name, 'has been downloaded', n, 'times');
-      return n;
-    });
-}
-
-function topStarred(name) {
-  la(check.unemptyString(name), 'invalid package name', name);
-  return q.nmapply(npm.packages, 'starred', [name])
-    .then(function usersToStarred(users) {
-      la(check.array(users), 'expected list of users that starred', name, 'not', users);
-      var n = users.length;
-      downloads[name] = n;
-      console.log(name, 'has been starred', n, 'times');
-      return n;
-    });
-}
-
-function fetchDownloads(metric, name) {
-  la(metric === 'downloads' || metric === 'starred', 'invalid metric', metric);
-  la(check.unemptyString(name), 'invalid package name', name);
-  return metric === 'downloads' ? topDownloads(name) : topStarred(name);
-}
-
-function fetchDownloadsForEachDependent(metric, dependents) {
-  la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
-  var actions = dependents.map(function (name) {
-    return _.partial(fetchDownloads, metric, name);
-  });
-  console.log('preparing number of downloads for dependents', dependents);
-
-  var fetchSequence = actions.reduce(q.when, q());
-  return fetchSequence;
-}
-
-function getTopDependents(name, n) {
-  la(check.unemptyString(name), 'missing package name');
-  la(check.positiveNumber(n), 'invalid top dependents to check', n);
-  console.log('fetching top', n, 'dependent projects for', name);
-
-  return q.nmapply(npm.packages, 'depended', [name]).then(function (dependents) {
-    la(check.array(dependents),
-      'expected modules dependent on', name, 'to be array', dependents);
-    console.log('module', name, 'has', dependents.length, 'dependents');
-    var names = _.pluck(dependents, 'name');
-    return names;
-  });
-}
+var npm = require('./src/top-dependents');
+la(check.schema({
+  downloads: check.fn,
+  sortedByDownloads: check.fn,
+  topDependents: check.fn
+}, npm), 'invalid npm methods', npm);
 
 function saveTopDependents(name, metric, n) {
   la(check.unemptyString(name), 'invalid package name', name);
   la(check.unemptyString(metric), 'invalid metric', metric);
   la(check.positiveNumber(n), 'invalid top number', n);
 
-  var fetchTop = _.partial(fetchDownloadsForEachDependent, metric);
-  return getTopDependents(name, n)
+  var fetchTop = _.partial(npm.downloads, metric);
+  return npm.topDependents(name, n)
     .then(fetchTop)
-    .then(sortByDownloads)
+    .then(npm.sortedByDownloads)
     .then(function (dependents) {
       la(check.array(dependents), 'cannot select top n, not a list', dependents);
       return _.first(dependents, n);
