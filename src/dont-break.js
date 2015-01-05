@@ -20,7 +20,7 @@ var pkg = require(path.join(process.cwd(), './package.json'));
 la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 var dontBreakFilename = './.dont-break';
 
-var npm = require('./src/top-dependents');
+var npm = require('./top-dependents');
 la(check.schema({
   downloads: check.fn,
   sortedByDownloads: check.fn,
