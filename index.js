@@ -5,7 +5,6 @@ var dontBreak = require('./src/dont-break');
 if (module.parent) {
   module.exports = dontBreak;
 } else {
-
   require('./src/check-updates');
 
   var join = require('path').join;

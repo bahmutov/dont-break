@@ -168,7 +168,15 @@ function testDependents(dependents) {
 function dontBreak(options) {
   options = options || {};
 
-  return getDependents(options).then(function (dependents) {
+  var start;
+
+  if (check.arrayOfStrings(options.dep)) {
+    start = q(options.dep);
+  } else {
+    start = getDependents(options);
+  }
+
+  return start.then(function (dependents) {
     la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
     dependents = _.invoke(dependents, 'trim');
     console.log('testing dependents', dependents);
