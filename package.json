@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if the current version of your package would break dependent projects",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./index.js"
@@ -50,7 +50,7 @@
   ],
   "license": "MIT",
   "main": "index.js",
-  "pre-commit": "npm test",
+  "pre-commit": "npm test && npm version",
   "repository": {
     "type": "git",
     "url": "git@github.com:bahmutov/dont-break.git"
