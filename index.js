@@ -13,13 +13,7 @@ var quote = require('quote');
 
 console.log(dontBreakPackage.name + '@' + dontBreakPackage.version, '-', dontBreakPackage.description);
 
-var program = require('commander');
-program
-  .option('-t, --top-downloads <n>',
-    'Fetch N most downloaded dependent modules, save and check', parseInt)
-  .option('-s, --top-starred <n>',
-    'Fetch N most starred dependent modules, save and check', parseInt)
-  .parse(process.argv);
+var program = require('./src/cli-options');
 
 var _ = require('lodash');
 var q = require('q');
