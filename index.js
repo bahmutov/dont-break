@@ -1,23 +1,20 @@
 #!/usr/bin/env node
 
-(function checkForUpdates() {
-  var thisPackage = require('./package.json');
-  require('update-notifier')({
-    packageName: thisPackage.name,
-    packageVersion: thisPackage.version
-  }).notify();
-}());
+require('./src/check-updates');
 
 require('shelljs/global');
 /* global cp */
 
+var path = require('path');
+var dontBreakPackage = require(path.join(__dirname, 'package.json'));
 require('lazy-ass');
 var check = require('check-more-types');
 var quote = require('quote');
 
+console.log(dontBreakPackage.name + '@' + dontBreakPackage.version, '-', dontBreakPackage.description);
+
 var program = require('commander');
 program
-  .usage('dont-break')
   .option('-t, --top-downloads <n>',
     'Fetch N most downloaded dependent modules, save and check', parseInt)
   .option('-s, --top-starred <n>',
@@ -30,7 +27,6 @@ var install = require('npm-utils').install;
 la(check.fn(install), 'install should be a function', install);
 var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
-var path = require('path');
 var fs = require('fs');
 var read = fs.readFile;
 var write = fs.writeFile;
