@@ -5,6 +5,7 @@ require('lazy-ass');
 var check = require('check-more-types');
 var path = require('path');
 var quote = require('quote');
+var chdir = require('chdir-promise');
 
 var _ = require('lodash');
 var q = require('q');
@@ -13,8 +14,6 @@ la(check.fn(install), 'install should be a function', install);
 var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
 var fs = require('fs');
-var read = fs.readFile;
-var write = fs.writeFile;
 var stripComments = require('strip-json-comments');
 var dontBreakFilename = './.dont-break';
 
@@ -43,7 +42,7 @@ function saveTopDependents(name, metric, n) {
       var str = '// top ' + n + ' most dependent modules by ' + metric + ' for ' + name + '\n';
       str += '// data from NPM registry on ' + (new Date()).toDateString() + '\n';
       str += topDependents.join('\n') + '\n';
-      return q.nfcall(write, dontBreakFilename, str, 'utf-8').then(function () {
+      return q.ninvoke(fs, 'writeFile', dontBreakFilename, str, 'utf-8').then(function () {
         console.log('saved top', n, 'dependents for', name, 'by', metric, 'to', dontBreakFilename);
         return topDependents;
       });
@@ -51,16 +50,17 @@ function saveTopDependents(name, metric, n) {
 }
 
 function getDependentsFromFile() {
-  return q.nfcall(read, dontBreakFilename, 'utf-8')
+  return q.ninvoke(fs, 'readFile', dontBreakFilename, 'utf-8')
     .then(function (text) {
       text = stripComments(text);
       return text.split('\n').filter(function (line) {
         return line.trim().length;
       });
     })
-    .catch(function () {
+    .catch(function (err) {
       // the file does not exist probably
-      console.log('could not find file', quote(dontBreakFilename));
+      console.log(err && err.message);
+      console.log('could not find file', quote(dontBreakFilename), 'in', quote(process.cwd()));
       return [];
     });
 }
@@ -172,34 +172,57 @@ function testDependents(dependents) {
   }, q(true));
 }
 
-function dontBreak(options) {
-  options = options || {};
+function dontBreakDependents(dependents) {
+  la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
+  dependents = _.invoke(dependents, 'trim');
+  console.log('testing dependents', dependents);
 
-  var start;
+  var logSuccess = function () {
+    console.log('all dependents tested');
+  };
+
+  return testDependents(dependents)
+    .then(logSuccess);
+}
+
+function dontBreak(options) {
+  if (check.unemptyString(options)) {
+    options = {
+      folder: options
+    };
+  }
+  options = options || {};
+  options.folder = options.folder || process.cwd();
+
+  var start = chdir.to(options.folder);
 
   if (check.arrayOfStrings(options.dep)) {
-    start = q(options.dep);
+    start = start.then(function () {
+      return options.dep;
+    });
   } else {
-    start = getDependents(options);
+    start = start.then(function () {
+      return getDependents(options);
+    });
   }
 
-  return start.then(function (dependents) {
-    la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
-    dependents = _.invoke(dependents, 'trim');
-    console.log('testing dependents', dependents);
-
-    return testDependents(dependents)
-      .then(function () {
-        console.log('all dependents tested');
-      });
-  }).then(function () {
+  var logPass = function () {
     console.log('PASS: Current version does not break dependents');
-  }, function (err) {
+    return true;
+  };
+
+  var logFail = function (err) {
     console.log('FAIL: Current version break dependents');
     if (err && err.message) {
       console.error(err.message);
     }
-  }).done();
+    return false;
+  };
+
+  return start
+    .then(dontBreakDependents)
+    .then(logPass, logFail)
+    .finally(chdir.from);
 }
 
 module.exports = dontBreak;
