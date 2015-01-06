@@ -16,8 +16,6 @@ var fs = require('fs');
 var read = fs.readFile;
 var write = fs.writeFile;
 var stripComments = require('strip-json-comments');
-var pkg = require(path.join(process.cwd(), './package.json'));
-la(check.unemptyString(pkg.version), 'could not get package version', pkg);
 var dontBreakFilename = './.dont-break';
 
 var npm = require('./top-dependents');
@@ -62,13 +60,19 @@ function getDependentsFromFile() {
     })
     .catch(function () {
       // the file does not exist probably
+      console.log('could not find file', quote(dontBreakFilename));
       return [];
     });
 }
 
 function getDependents(options, name) {
   options = options || {};
-  var forName = name || pkg.name;
+  var forName = name;
+
+  if (!name) {
+    var pkg = require(path.join(process.cwd(), './package.json'));
+    forName = pkg.name;
+  }
 
   var firstStep;
 
@@ -107,6 +111,8 @@ function testInFolder(folder) {
 
 function testCurrentModuleInDependent(dependentFolder) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder);
+
+  var pkg = require(path.join(process.cwd(), './package.json'));
   var currentModuleName = pkg.name;
   var fullPath = path.join(dependentFolder, 'node_modules/' + currentModuleName);
   la(fs.existsSync(fullPath), 'cannot find', fullPath);
@@ -123,6 +129,7 @@ function testDependent(dependent) {
   la(check.unemptyString(dependent), 'invalid dependent', dependent);
   console.log('testing', dependent);
 
+  var pkg = require(path.join(process.cwd(), './package.json'));
   var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + dependent;
 
   return install({

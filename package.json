@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if the current version of your package would break dependent projects",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./index.js"
@@ -17,8 +17,8 @@
     "lazy-ass": "0.5.3",
     "lodash": "2.4.1",
     "npm-registry": "0.1.13",
-    "npm-utils": "0.0.8",
-    "q": "1.1.2",
+    "npm-utils": "0.0.9",
+    "q": "2.0.2",
     "quote": "0.2.2",
     "shelljs": "0.3.0",
     "strip-json-comments": "1.0.2",
@@ -30,8 +30,8 @@
     "grunt-contrib-jshint": "0.10.0",
     "grunt-contrib-watch": "0.6.1",
     "grunt-deps-ok": "0.5.2",
-    "grunt-eslint": "2.1.0",
-    "grunt-filenames": "0.2.0",
+    "grunt-eslint": "3.0.0",
+    "grunt-filenames": "0.3.1",
     "grunt-jscs": "1.1.0",
     "grunt-nice-package": "0.9.2",
     "jshint-summary": "0.4.0",
@@ -51,7 +51,10 @@
   ],
   "license": "MIT",
   "main": "index.js",
-  "pre-commit": "npm test && npm version",
+  "pre-commit": [
+    "npm test",
+    "npm version"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:bahmutov/dont-break.git"
