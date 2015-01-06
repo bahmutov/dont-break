@@ -12,6 +12,6 @@ program
     'Check if current code breaks given dependent project(s)', list)
   .parse(process.argv);
 
-console.log(program);
+// console.log(program);
 
 module.exports = program;

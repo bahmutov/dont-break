@@ -8,8 +8,8 @@ if (module.parent) {
   require('./src/check-updates');
 
   var join = require('path').join;
-  var dontBreakPackage = require(join(__dirname, 'package.json'));
-  console.log(dontBreakPackage.name + '@' + dontBreakPackage.version, '-', dontBreakPackage.description);
+  var pkg = require(join(__dirname, 'package.json'));
+  console.log(pkg.name + '@' + pkg.version, '-', pkg.description);
 
   var options = require('./src/cli-options');
   dontBreak(options);
