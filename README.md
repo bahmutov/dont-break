@@ -3,7 +3,7 @@
 Checks if the node module in the current folder breaks unit tests for specified dependent projects.
 
 [Relevant discussion at npm](https://github.com/npm/npm/issues/6510), 
-[Do not break dependant modules](http://bahmutov.calepin.co/do-not-break-dependant-modules.html).
+[Do not break dependant modules](http://glebbahmutov.com/blog/do-not-break-dependant-modules/).
 
 [![NPM][dont-break-icon] ][dont-break-url]
 
@@ -106,7 +106,7 @@ Author: Gleb Bahmutov &copy; 2014
 
 * [@bahmutov](https://twitter.com/bahmutov)
 * [glebbahmutov.com](http://glebbahmutov.com)
-* [blog](http://bahmutov.calepin.co/)
+* [blog](http://glebbahmutov.com/blog)
 
 License: MIT - do anything with the code, but don't blame me if it does not work.
 
