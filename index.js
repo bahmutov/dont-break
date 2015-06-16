@@ -12,5 +12,12 @@ if (module.parent) {
   console.log(pkg.name + '@' + pkg.version, '-', pkg.description);
 
   var options = require('./src/cli-options');
-  dontBreak(options).done();
+  dontBreak(options)
+    .catch(function (err) {
+      console.log('error?', err);
+    })
+    .then(function (success) {
+      console.log('finishing with success?', success);
+      process.exit(success ? 0 : 1);
+    });
 }

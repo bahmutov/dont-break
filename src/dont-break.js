@@ -196,7 +196,7 @@ function dontBreakDependents(dependents) {
   dependents = _.invoke(dependents, 'trim');
   console.log('testing dependents\n' + dependents);
 
-  var logSuccess = function () {
+  var logSuccess = function logSuccess() {
     console.log('all dependents tested');
   };
 
@@ -225,12 +225,12 @@ function dontBreak(options) {
     });
   }
 
-  var logPass = function () {
+  var logPass = function logPass() {
     console.log('PASS: Current version does not break dependents');
     return true;
   };
 
-  var logFail = function (err) {
+  var logFail = function logFail(err) {
     console.log('FAIL: Current version break dependents');
     if (err && err.message) {
       console.error(err.message);
