@@ -98,11 +98,11 @@ upgrade to the version you are about to release.
 ## Custom test command
 
 You can specify a custom test command per dependent module. Separate the name of the module
-from the test command using `:` For example, to run `grunt test` for `foo`, but default command
-for module `bar`, list in `.dont-break
+from the test command using `:` For example, to run `grunt test` for `foo-module-name`, 
+but default command for module `bar-name`, list in `.dont-break` the following:
 
-    foo: grunt test
-    bar
+    foo-module-name: grunt test
+    bar-name
 
 ## Related
 
