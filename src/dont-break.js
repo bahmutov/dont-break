@@ -231,9 +231,12 @@ function dontBreak(options) {
   };
 
   var logFail = function logFail(err) {
-    console.log('FAIL: Current version break dependents');
+    console.log('FAIL: Current version breaks dependents');
     if (err && err.message) {
-      console.error(err.message);
+      console.error('REPORTED ERROR:', err.message);
+      if (err.stack) {
+        console.error(err.stack);
+      }
     }
     return false;
   };

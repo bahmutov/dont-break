@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if the current version of your package would break dependent projects",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./index.js"
@@ -18,7 +18,7 @@
     "lazy-ass": "0.5.8",
     "lodash": "3.9.3",
     "npm-registry": "0.1.13",
-    "npm-utils": "0.1.1",
+    "npm-utils": "0.1.4",
     "q": "2.0.3",
     "quote": "0.4.0",
     "shelljs": "0.5.1",

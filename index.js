@@ -16,7 +16,7 @@ if (module.parent) {
     .catch(function (err) {
       console.log('error?', err);
     })
-    .then(function (success) {
+    .then(function exitApplication(success) {
       console.log('finishing with success?', success);
       process.exit(success ? 0 : 1);
     });
