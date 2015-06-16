@@ -58,6 +58,7 @@ function fetchDownloadsForEachDependent(metric, dependents) {
   });
   console.log('preparing number of downloads for dependents', dependents.join(', '));
 
+  /* jshint -W064 */
   var fetchSequence = actions.reduce(Q.when, Q());
   return fetchSequence;
 }
