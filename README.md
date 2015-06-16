@@ -95,6 +95,15 @@ In the example case, it will report something like this
 The message clearly tells you that the dependent projects as they are right now cannot
 upgrade to the version you are about to release.
 
+## Custom test command
+
+You can specify a custom test command per dependent module. Separate the name of the module
+from the test command using `:` For example, to run `grunt test` for `foo`, but default command
+for module `bar`, list in `.dont-break
+
+    foo: grunt test
+    bar
+
 ## Related
 
 *dont-break* is the opposite of [next-update](https://github.com/bahmutov/next-update) 

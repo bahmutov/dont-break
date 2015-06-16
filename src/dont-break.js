@@ -17,6 +17,9 @@ var fs = require('fs');
 var stripComments = require('strip-json-comments');
 var dontBreakFilename = './.dont-break';
 
+var NAME_COMMAND_SEPARATOR = ':';
+var DEFAULT_TEST_COMMAND = 'npm test';
+
 var npm = require('./top-dependents');
 la(check.schema({
   downloads: check.fn,
@@ -91,11 +94,12 @@ function getDependents(options, name) {
   return q(firstStep).then(getDependentsFromFile);
 }
 
-function testInFolder(folder) {
+function testInFolder(testCommand, folder) {
+  la(check.unemptyString(testCommand), 'missing test command', testCommand);
   la(check.unemptyString(folder), 'expected folder', folder);
   var cwd = process.cwd();
   process.chdir(folder);
-  return npmTest().then(function () {
+  return npmTest(testCommand).then(function () {
     console.log('tests work in', folder);
     return folder;
   })
@@ -127,17 +131,23 @@ function testCurrentModuleInDependent(dependentFolder) {
 
 function testDependent(dependent) {
   la(check.unemptyString(dependent), 'invalid dependent', dependent);
-  console.log('testing', dependent);
+  console.log('testing "%s"', dependent);
+
+  var nameParts = dependent.split(NAME_COMMAND_SEPARATOR);
+  la(nameParts.length, 'expected at least module name', dependent);
+  var moduleName = nameParts[0].trim();
+  var moduleTestCommand = nameParts[1] || DEFAULT_TEST_COMMAND;
+  var testModuleInFolder = _.partial(testInFolder, moduleTestCommand);
 
   var pkg = require(path.join(process.cwd(), './package.json'));
-  var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + dependent;
+  var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + moduleName;
 
   return install({
-    name: dependent,
+    name: moduleName,
     prefix: toFolder
   }).then(function formFullFolderName() {
     console.log('installed into', toFolder);
-    return path.join(toFolder, 'lib/node_modules/' + dependent);
+    return path.join(toFolder, 'lib/node_modules/' + moduleName);
   }).then(function checkInstalledFolder(folder) {
     la(check.unemptyString(folder), 'expected folder', folder);
     la(fs.existsSync(folder), 'expected existing folder', folder);
@@ -157,9 +167,9 @@ function testDependent(dependent) {
       throw err;
     });
   })
-  .then(testInFolder)
+  .then(testModuleInFolder)
   .then(testCurrentModuleInDependent)
-  .then(testInFolder);
+  .then(testModuleInFolder);
 }
 
 function testDependents(dependents) {
@@ -175,7 +185,7 @@ function testDependents(dependents) {
 function dontBreakDependents(dependents) {
   la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
   dependents = _.invoke(dependents, 'trim');
-  console.log('testing dependents', dependents);
+  console.log('testing dependents\n' + dependents);
 
   var logSuccess = function () {
     console.log('all dependents tested');
