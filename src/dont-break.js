@@ -9,8 +9,8 @@ var chdir = require('chdir-promise');
 
 var _ = require('lodash');
 var q = require('q');
-var install = require('npm-utils').install;
-la(check.fn(install), 'install should be a function', install);
+var npmInstall = require('npm-utils').install;
+la(check.fn(npmInstall), 'install should be a function', npmInstall);
 var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
 var fs = require('fs');
@@ -19,6 +19,11 @@ var dontBreakFilename = './.dont-break';
 
 var NAME_COMMAND_SEPARATOR = ':';
 var DEFAULT_TEST_COMMAND = 'npm test';
+var INSTALL_TIMEOUT = 10000;
+
+function install(options) {
+  return q(npmInstall(options));
+}
 
 var npm = require('./top-dependents');
 la(check.schema({
@@ -33,12 +38,13 @@ function saveTopDependents(name, metric, n) {
   la(check.positiveNumber(n), 'invalid top number', n);
 
   var fetchTop = _.partial(npm.downloads, metric);
-  return npm.topDependents(name, n)
+  return q(npm.topDependents(name, n))
     .then(fetchTop)
     .then(npm.sortedByDownloads)
     .then(function (dependents) {
       la(check.array(dependents), 'cannot select top n, not a list', dependents);
-      return _.first(dependents, n);
+      console.log('limiting top downloads to first', n, 'from the list of', dependents.length);
+      return _.take(dependents, n);
     })
     .then(function saveToFile(topDependents) {
       la(check.arrayOfStrings(topDependents), 'expected list of top strings', topDependents);
@@ -141,11 +147,14 @@ function testDependent(dependent) {
 
   var pkg = require(path.join(process.cwd(), './package.json'));
   var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + moduleName;
+  console.log('testing folder %s', quote(toFolder));
 
   return install({
     name: moduleName,
     prefix: toFolder
-  }).then(function formFullFolderName() {
+  })
+  .timeout(INSTALL_TIMEOUT, 'install timed out for ' + moduleName)
+  .then(function formFullFolderName() {
     console.log('installed into', toFolder);
     return path.join(toFolder, 'lib/node_modules/' + moduleName);
   }).then(function checkInstalledFolder(folder) {

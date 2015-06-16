@@ -3,7 +3,7 @@
 require('lazy-ass');
 var check = require('check-more-types');
 var _ = require('lodash');
-var q = require('q');
+var Q = require('q');
 
 var Registry = require('npm-registry');
 var npm = new Registry();
@@ -21,7 +21,7 @@ function sortedByDownloads() {
 
 function topDownloads(name) {
   la(check.unemptyString(name), 'invalid package name', name);
-  return q.nmapply(npm.downloads, 'totals', ['last-week', name])
+  return Q.ninvoke(npm.downloads, 'totals', 'last-week', name)
     .then(function statsToDownloads(stats) {
       la(check.array(stats) && stats.length === 1, 'expected single stats', stats);
       la(check.number(stats[0].downloads), 'invalid number of downloads', stats);
@@ -35,7 +35,7 @@ function topDownloads(name) {
 
 function topStarred(name) {
   la(check.unemptyString(name), 'invalid package name', name);
-  return q.nmapply(npm.packages, 'starred', [name])
+  return Q.ninvoke(npm.packages, 'starred', name)
     .then(function usersToStarred(users) {
       la(check.array(users), 'expected list of users that starred', name, 'not', users);
       var n = users.length;
@@ -56,9 +56,9 @@ function fetchDownloadsForEachDependent(metric, dependents) {
   var actions = dependents.map(function (name) {
     return _.partial(fetchDownloads, metric, name);
   });
-  console.log('preparing number of downloads for dependents', dependents);
+  console.log('preparing number of downloads for dependents', dependents.join(', '));
 
-  var fetchSequence = actions.reduce(q.when, q());
+  var fetchSequence = actions.reduce(Q.when, Q());
   return fetchSequence;
 }
 
@@ -67,7 +67,7 @@ function getTopDependents(name, n) {
   la(check.positiveNumber(n), 'invalid top dependents to check', n);
   console.log('fetching top', n, 'dependent projects for', name);
 
-  return q.nmapply(npm.packages, 'depended', [name]).then(function (dependents) {
+  return Q.ninvoke(npm.packages, 'depended', name).then(function (dependents) {
     la(check.array(dependents),
       'expected modules dependent on', name, 'to be array', dependents);
     console.log('module', name, 'has', dependents.length, 'dependents');
