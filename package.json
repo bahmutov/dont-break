@@ -69,10 +69,14 @@
     "type": "git",
     "url": "git@github.com:bahmutov/dont-break.git"
   },
+  "czConfig": {
+    "path": "node_modules/cz-conventional-changelog"
+  },
   "scripts": {
     "build": "grunt",
     "test": "grunt && npm run show-help",
     "show-help": "node index.js --help",
-    "test-empty": "node src/test/run-dont-break.js"
+    "test-empty": "node src/test/run-dont-break.js",
+    "commit": "git-cz"
   }
 }
