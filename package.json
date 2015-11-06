@@ -20,6 +20,9 @@
     }
   },
   "contributors": [],
+  "czConfig": {
+    "path": "node_modules/cz-conventional-changelog"
+  },
   "dependencies": {
     "chdir-promise": "0.2.1",
     "check-more-types": "1.7.3",
@@ -68,9 +71,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:bahmutov/dont-break.git"
-  },
-  "czConfig": {
-    "path": "node_modules/cz-conventional-changelog"
   },
   "scripts": {
     "build": "grunt",
