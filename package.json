@@ -16,12 +16,14 @@
         "npm test",
         "npm version"
       ],
-      "post-commit": "npm version"
+      "post-commit": "npm version",
+      "pre-push": [],
+      "post-merge": []
     }
   },
   "contributors": [],
   "czConfig": {
-    "path": "node_modules/cz-conventional-changelog"
+    "path": "node_modules/pre-git/node_modules/cz-conventional-changelog"
   },
   "dependencies": {
     "chdir-promise": "0.2.1",
@@ -39,8 +41,6 @@
     "update-notifier": "0.5.0"
   },
   "devDependencies": {
-    "commitizen": "2.4.1",
-    "cz-conventional-changelog": "1.1.4",
     "eslint-rules": "0.4.3",
     "grunt": "0.4.5",
     "grunt-cli": "0.1.13",
@@ -53,7 +53,7 @@
     "grunt-nice-package": "0.9.4",
     "jshint-summary": "0.4.0",
     "matchdep": "1.0.0",
-    "pre-git": "1.0.0"
+    "pre-git": "1.2.1"
   },
   "engines": {
     "node": ">= 0.10.0"
@@ -74,7 +74,7 @@
   },
   "scripts": {
     "build": "grunt",
-    "commit": "git-cz",
+    "commit": "./node_modules/pre-git/node_modules/commitizen/bin/git-cz",
     "show-help": "./bin/dont-break --help",
     "test": "grunt && npm run show-help",
     "test-empty": "node src/test/run-dont-break.js"
