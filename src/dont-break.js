@@ -15,6 +15,7 @@ var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
 var fs = require('fs');
 var stripComments = require('strip-json-comments');
+// write found dependencies into a hidden file
 var dontBreakFilename = './.dont-break';
 
 var NAME_COMMAND_SEPARATOR = ':';
@@ -70,6 +71,7 @@ function getDependentsFromFile() {
       // the file does not exist probably
       console.log(err && err.message);
       console.log('could not find file', quote(dontBreakFilename), 'in', quote(process.cwd()));
+      console.log('no dependent projects, maybe query NPM for projects that depend on this one.');
       return [];
     });
 }

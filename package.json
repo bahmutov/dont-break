@@ -1,10 +1,10 @@
 {
   "name": "dont-break",
   "description": "Checks if the current version of your package would break dependent projects",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
-    "dont-break": "./index.js"
+    "dont-break": "./bin/dont-break"
   },
   "bugs": {
     "url": "https://github.com/bahmutov/dont-break/issues"
