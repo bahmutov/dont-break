@@ -75,7 +75,7 @@
   "scripts": {
     "build": "grunt",
     "commit": "git-cz",
-    "show-help": "node index.js --help",
+    "show-help": "./bin/dont-break --help",
     "test": "grunt && npm run show-help",
     "test-empty": "node src/test/run-dont-break.js"
   }
