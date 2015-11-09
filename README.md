@@ -113,6 +113,64 @@ You can also specify a longer installation time out, in seconds, using CLI optio
 *dont-break* is the opposite of [next-update](https://github.com/bahmutov/next-update)
 that one can use to safely upgrade dependencies.
 
+## Setting up second CI for dont-break
+
+I prefer to use a separate CI service specifically to test the current code
+against the dependent projects using `dont-break`. For example, the project
+[boggle](https://www.npmjs.com/package/boggle) is setup this way. The unit tests
+are run on [TravisCI](https://travis-ci.org/bahmutov/boggle) using
+pretty standard [.travis.yml](https://github.com/bahmutov/boggle/blob/master/.travis.yml) file
+
+    language: node_js
+    node_js:
+      - "0.12"
+      - "4"
+    branches:
+      only:
+        - master
+    before_script:
+      - npm install -g grunt-cli
+
+Then I setup a separate build service on [CircleCi](https://circleci.com/gh/bahmutov/boggle)
+just to run the `npm run dont-break` command from the `package.json`
+
+    "scripts": {
+        "dont-break": "dont-break --timeout 30"
+    }
+
+We are assuming a global installation of `dont-break`, and the project lists
+the projects to check in the
+[.dont-break](https://github.com/bahmutov/boggle/blob/master/.dont-break) file.
+At the present there is only a single dependent project
+[boggle-connect](https://www.npmjs.com/package/boggle-connect).
+
+To run `dont-break` on CircleCI, I created the
+[circle.yml](https://github.com/bahmutov/boggle/blob/master/circle.yml) file.
+It should be clear what it does - installs `dont-break`, and runs the npm script command.
+
+    machine:
+      node:
+        version: "0.12"
+    dependencies:
+      post:
+        - npm install -g dont-break
+    test:
+      override:
+        - npm run dont-break
+
+To make the status visible, I included the CircleCI badges in the README file.
+
+```md
+[![Dont-break][circle-ci-image] ][circle-ci-url]
+[circle-ci-image]: https://circleci.com/gh/bahmutov/boggle.svg?style=svg
+[circle-ci-url]: https://circleci.com/gh/bahmutov/boggle
+```
+
+which produces the following:
+
+Breaking dependencies? [![Dont-break][circle-ci-image] ][circle-ci-url] using
+[dont-break](https://github.com/bahmutov/dont-break)
+
 ## Development and testing
 
 This project is tested end to end using two small projects:
