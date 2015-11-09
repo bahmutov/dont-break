@@ -171,6 +171,9 @@ which produces the following:
 Breaking dependencies? [![Dont-break][circle-ci-image] ][circle-ci-url] using
 [dont-break](https://github.com/bahmutov/dont-break)
 
+[circle-ci-image]: https://circleci.com/gh/bahmutov/boggle.svg?style=svg
+[circle-ci-url]: https://circleci.com/gh/bahmutov/boggle
+
 ## Development and testing
 
 This project is tested end to end using two small projects:
