@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "eslint-rules": "0.4.3",
+    "git-issues": "1.0.0",
     "grunt": "0.4.5",
     "grunt-cli": "0.1.13",
     "grunt-contrib-jshint": "0.11.3",
@@ -78,6 +79,7 @@
     "commit": "./node_modules/pre-git/node_modules/commitizen/bin/git-cz",
     "show-help": "./bin/dont-break --help",
     "test": "grunt && npm run show-help",
-    "test-empty": "node src/test/run-dont-break.js"
+    "test-empty": "node src/test/run-dont-break.js",
+    "issues": "git-issues"
   }
 }

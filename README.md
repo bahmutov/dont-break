@@ -180,6 +180,8 @@ This project is tested end to end using two small projects:
 [boggle](https://www.npmjs.com/package/boggle) and its dependent
 [boggle-connect](https://www.npmjs.com/package/boggle-connect).
 
+To see open github issues, use command `npm run issues`
+
 ### Small print
 
 Author: Gleb Bahmutov &copy; 2014
