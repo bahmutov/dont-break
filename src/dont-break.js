@@ -20,7 +20,7 @@ var dontBreakFilename = './.dont-break';
 
 var NAME_COMMAND_SEPARATOR = ':';
 var DEFAULT_TEST_COMMAND = 'npm test';
-var INSTALL_TIMEOUT = 10000;
+var INSTALL_TIMEOUT_SECONDS = 10;
 
 function install(options) {
   return q(npmInstall(options));
@@ -137,7 +137,7 @@ function testCurrentModuleInDependent(dependentFolder) {
   return dependentFolder;
 }
 
-function testDependent(dependent) {
+function testDependent(options, dependent) {
   la(check.unemptyString(dependent), 'invalid dependent', dependent);
   console.log('testing "%s"', dependent);
 
@@ -151,49 +151,51 @@ function testDependent(dependent) {
   var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + moduleName;
   console.log('testing folder %s', quote(toFolder));
 
+  var timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS;
+  la(check.positiveNumber(timeoutSeconds), 'wrong timeout', timeoutSeconds, options);
+
   return install({
     name: moduleName,
     prefix: toFolder
-  })
-  .timeout(INSTALL_TIMEOUT, 'install timed out for ' + moduleName)
-  .then(function formFullFolderName() {
-    console.log('installed into', toFolder);
-    return path.join(toFolder, 'lib/node_modules/' + moduleName);
-  }).then(function checkInstalledFolder(folder) {
-    la(check.unemptyString(folder), 'expected folder', folder);
-    la(fs.existsSync(folder), 'expected existing folder', folder);
-    return folder;
-  })
-  .then(function installDependencies(folder) {
-    console.log('installing dev dependencies', folder);
-    var cwd = process.cwd();
-    process.chdir(folder);
-    return install({}).then(function () {
-      console.log('restoring current directory', cwd);
-      process.chdir(cwd);
+  }).timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
+    .then(function formFullFolderName() {
+      console.log('installed into', toFolder);
+      return path.join(toFolder, 'lib/node_modules/' + moduleName);
+    }).then(function checkInstalledFolder(folder) {
+      la(check.unemptyString(folder), 'expected folder', folder);
+      la(fs.existsSync(folder), 'expected existing folder', folder);
       return folder;
-    }, function (err) {
-      console.error('Could not install dependencies in', folder);
-      console.error(err);
-      throw err;
-    });
-  })
-  .then(testModuleInFolder)
-  .then(testCurrentModuleInDependent)
-  .then(testModuleInFolder);
+    })
+    .then(function installDependencies(folder) {
+      console.log('installing dev dependencies', folder);
+      var cwd = process.cwd();
+      process.chdir(folder);
+      return install({}).then(function () {
+        console.log('restoring current directory', cwd);
+        process.chdir(cwd);
+        return folder;
+      }, function (err) {
+        console.error('Could not install dependencies in', folder);
+        console.error(err);
+        throw err;
+      });
+    })
+    .then(testModuleInFolder)
+    .then(testCurrentModuleInDependent)
+    .then(testModuleInFolder);
 }
 
-function testDependents(dependents) {
+function testDependents(options, dependents) {
   la(check.array(dependents), dependents);
 
   return dependents.reduce(function (prev, dependent) {
     return prev.then(function () {
-      return testDependent(dependent);
+      return testDependent(options, dependent);
     });
   }, q(true));
 }
 
-function dontBreakDependents(dependents) {
+function dontBreakDependents(options, dependents) {
   la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
   dependents = _.invoke(dependents, 'trim');
   console.log('testing dependents\n' + dependents);
@@ -202,7 +204,7 @@ function dontBreakDependents(dependents) {
     console.log('all dependents tested');
   };
 
-  return testDependents(dependents)
+  return testDependents(options, dependents)
     .then(logSuccess);
 }
 
@@ -244,7 +246,7 @@ function dontBreak(options) {
   };
 
   return start
-    .then(dontBreakDependents)
+    .then(_.partial(dontBreakDependents, options))
     .then(logPass, logFail)
     .finally(chdir.from);
 }

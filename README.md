@@ -2,7 +2,7 @@
 
 Checks if the node module in the current folder breaks unit tests for specified dependent projects.
 
-[Relevant discussion at npm](https://github.com/npm/npm/issues/6510), 
+[Relevant discussion at npm](https://github.com/npm/npm/issues/6510),
 [Do not break dependant modules](http://glebbahmutov.com/blog/do-not-break-dependant-modules/).
 
 [![NPM][dont-break-icon] ][dont-break-url]
@@ -32,7 +32,7 @@ to test.
 
 Picking projects to test manually is a judgement call. Dont-break can fetch top N most downloaded
 or most starred dependent modules and save the list.
-* run `dont-break --top-downloads <N>` to find top N most downloaded dependent modules, 
+* run `dont-break --top-downloads <N>` to find top N most downloaded dependent modules,
 save to `.dont-break` and check. This will overwrite `.dont-break` file.
 * run `dont-break --top-starred <N>` to find top N most starred dependent modules,
 save to `.dont-break` and check.
@@ -58,7 +58,7 @@ changes.
 
 `foo-user` is now broken!
 
-Instead, before publishing new version to NPM, project `foo` can create a file in its 
+Instead, before publishing new version to NPM, project `foo` can create a file in its
 project folder `.dont-break` with names of dependent projects to test
 
     echo foo-user > .dont-break
@@ -74,7 +74,7 @@ Then it will run the tests again, throwing an exception if they stopped working.
 
 In the example case, it will report something like this
 
-    $ dont-break 
+    $ dont-break
     dependents [ 'foo-user' ]
     testing foo-user
       installing foo-user
@@ -98,16 +98,26 @@ upgrade to the version you are about to release.
 ## Custom test command
 
 You can specify a custom test command per dependent module. Separate the name of the module
-from the test command using `:` For example, to run `grunt test` for `foo-module-name`, 
+from the test command using `:` For example, to run `grunt test` for `foo-module-name`,
 but default command for module `bar-name`, list in `.dont-break` the following:
 
     foo-module-name: grunt test
     bar-name
 
+You can also specify a longer installation time out, in seconds, using CLI option
+
+    dont-break --timeout 30
+
 ## Related
 
-*dont-break* is the opposite of [next-update](https://github.com/bahmutov/next-update) 
+*dont-break* is the opposite of [next-update](https://github.com/bahmutov/next-update)
 that one can use to safely upgrade dependencies.
+
+## Development and testing
+
+This project is tested end to end using two small projects:
+[boggle](https://www.npmjs.com/package/boggle) and its dependent
+[boggle-connect](https://www.npmjs.com/package/boggle-connect).
 
 ### Small print
 
