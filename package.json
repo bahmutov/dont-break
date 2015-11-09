@@ -77,9 +77,9 @@
   "scripts": {
     "build": "grunt",
     "commit": "./node_modules/pre-git/node_modules/commitizen/bin/git-cz",
+    "issues": "git-issues",
     "show-help": "./bin/dont-break --help",
     "test": "grunt && npm run show-help",
-    "test-empty": "node src/test/run-dont-break.js",
-    "issues": "git-issues"
+    "test-empty": "node src/test/run-dont-break.js"
   }
 }
