@@ -1,19 +1,27 @@
 require('shelljs/global');
 /* global cp */
 
-require('lazy-ass');
+var la = require('lazy-ass');
 var check = require('check-more-types');
 var path = require('path');
+var join = path.join;
 var quote = require('quote');
 var chdir = require('chdir-promise');
+var banner = require('./banner');
 
 var _ = require('lodash');
 var q = require('q');
+
 var npmInstall = require('npm-utils').install;
 la(check.fn(npmInstall), 'install should be a function', npmInstall);
+
 var npmTest = require('npm-utils').test;
 la(check.fn(npmTest), 'npm test should be a function', npmTest);
+
 var fs = require('fs');
+var read = fs.readFileSync;
+var exists = fs.existsSync;
+
 var stripComments = require('strip-json-comments');
 // write found dependencies into a hidden file
 var dontBreakFilename = './.dont-break';
@@ -24,6 +32,11 @@ var INSTALL_TIMEOUT_SECONDS = 10;
 
 function install(options) {
   return q(npmInstall(options));
+}
+
+function readJSON(filename) {
+  la(exists(filename), 'cannot find JSON file to load', filename);
+  return JSON.parse(read(filename));
 }
 
 var npm = require('./top-dependents');
@@ -81,7 +94,7 @@ function getDependents(options, name) {
   var forName = name;
 
   if (!name) {
-    var pkg = require(path.join(process.cwd(), './package.json'));
+    var pkg = require(join(process.cwd(), './package.json'));
     forName = pkg.name;
   }
 
@@ -124,10 +137,10 @@ function testInFolder(testCommand, folder) {
 function testCurrentModuleInDependent(dependentFolder) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder);
 
-  var pkg = require(path.join(process.cwd(), './package.json'));
+  var pkg = require(join(process.cwd(), './package.json'));
   var currentModuleName = pkg.name;
-  var fullPath = path.join(dependentFolder, 'node_modules/' + currentModuleName);
-  la(fs.existsSync(fullPath), 'cannot find', fullPath);
+  var fullPath = join(dependentFolder, 'node_modules/' + currentModuleName);
+  la(exists(fullPath), 'cannot find', fullPath);
 
   var thisFolder = process.cwd() + '/*';
   console.log('Copying folder', quote(thisFolder), '\nto folder', quote(fullPath));
@@ -139,7 +152,7 @@ function testCurrentModuleInDependent(dependentFolder) {
 
 function testDependent(options, dependent) {
   la(check.unemptyString(dependent), 'invalid dependent', dependent);
-  console.log('testing "%s"', dependent);
+  banner('  testing', quote(dependent));
 
   var nameParts = dependent.split(NAME_COMMAND_SEPARATOR);
   la(nameParts.length, 'expected at least module name', dependent);
@@ -147,7 +160,7 @@ function testDependent(options, dependent) {
   var moduleTestCommand = nameParts[1] || DEFAULT_TEST_COMMAND;
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand);
 
-  var pkg = require(path.join(process.cwd(), './package.json'));
+  var pkg = require(join(process.cwd(), './package.json'));
   var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + moduleName;
   console.log('testing folder %s', quote(toFolder));
 
@@ -159,11 +172,21 @@ function testDependent(options, dependent) {
     prefix: toFolder
   }).timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(function formFullFolderName() {
-      console.log('installed into', toFolder);
-      return path.join(toFolder, 'lib/node_modules/' + moduleName);
+      return join(toFolder, 'lib/node_modules/' + moduleName);
     }).then(function checkInstalledFolder(folder) {
       la(check.unemptyString(folder), 'expected folder', folder);
-      la(fs.existsSync(folder), 'expected existing folder', folder);
+      la(exists(folder), 'expected existing folder', folder);
+      return folder;
+    })
+    .then(function printMessage(folder) {
+      var installedPackage = readJSON(join(folder, 'package.json'));
+      var moduleVersion = installedPackage.version;
+      var currentVersion = installedPackage.dependencies[pkg.name] ||
+        installedPackage.devDependencies[pkg.name];
+      banner('installed', moduleName + '@' + moduleVersion,
+        '\ninto', folder,
+        '\ncurrently uses', pkg.name + '@' + currentVersion,
+        '\nwill test', pkg.name + '@' + pkg.version);
       return folder;
     })
     .then(function installDependencies(folder) {
@@ -188,6 +211,7 @@ function testDependent(options, dependent) {
 function testDependents(options, dependents) {
   la(check.array(dependents), dependents);
 
+  // TODO switch to parallel testing!
   return dependents.reduce(function (prev, dependent) {
     return prev.then(function () {
       return testDependent(options, dependent);
@@ -198,7 +222,7 @@ function testDependents(options, dependents) {
 function dontBreakDependents(options, dependents) {
   la(check.arrayOfStrings(dependents), 'invalid dependents', dependents);
   dependents = _.invoke(dependents, 'trim');
-  console.log('testing dependents\n' + dependents);
+  banner('  testing the following dependents\n  ' + dependents);
 
   var logSuccess = function logSuccess() {
     console.log('all dependents tested');

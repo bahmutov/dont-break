@@ -1,0 +1,22 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/kensho/.nvm/versions/node/v0.12.7/bin/node',
+1 verbose cli   '/Users/kensho/.nvm/versions/node/v0.12.7/bin/npm',
+1 verbose cli   'run',
+1 verbose cli   'lint' ]
+2 info using npm@2.11.3
+3 info using node@v0.12.7
+4 verbose stack Error: missing script: lint
+4 verbose stack     at run (/Users/kensho/.nvm/versions/node/v0.12.7/lib/node_modules/npm/lib/run-script.js:142:19)
+4 verbose stack     at /Users/kensho/.nvm/versions/node/v0.12.7/lib/node_modules/npm/lib/run-script.js:58:5
+4 verbose stack     at /Users/kensho/.nvm/versions/node/v0.12.7/lib/node_modules/npm/node_modules/read-package-json/read-json.js:345:5
+4 verbose stack     at handleExists (/Users/kensho/.nvm/versions/node/v0.12.7/lib/node_modules/npm/node_modules/read-package-json/read-json.js:318:20)
+4 verbose stack     at FSReqWrap.cb [as oncomplete] (evalmachine.<anonymous>:226:19)
+5 verbose cwd /Users/kensho/git/dont-break
+6 error Darwin 15.0.0
+7 error argv "/Users/kensho/.nvm/versions/node/v0.12.7/bin/node" "/Users/kensho/.nvm/versions/node/v0.12.7/bin/npm" "run" "lint"
+8 error node v0.12.7
+9 error npm  v2.11.3
+10 error missing script: lint
+11 error If you need help, you may report this error at:
+11 error     <https://github.com/npm/npm/issues>
+12 verbose exit [ 1, true ]
