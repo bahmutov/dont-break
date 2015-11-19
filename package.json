@@ -37,6 +37,7 @@
     "lodash": "3.10.1",
     "npm-registry": "0.1.13",
     "npm-utils": "0.2.0",
+    "os-tmpdir": "1.0.1",
     "q": "2.0.3",
     "quote": "0.4.0",
     "shelljs": "0.5.3",
