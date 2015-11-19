@@ -63,6 +63,7 @@ function saveTopDependents(name, metric, n) {
     })
     .then(function saveToFile(topDependents) {
       la(check.arrayOfStrings(topDependents), 'expected list of top strings', topDependents);
+      // TODO use template library instead of manual concat
       var str = '// top ' + n + ' most dependent modules by ' + metric + ' for ' + name + '\n';
       str += '// data from NPM registry on ' + (new Date()).toDateString() + '\n';
       str += topDependents.join('\n') + '\n';
@@ -95,7 +96,7 @@ function getDependents(options, name) {
   var forName = name;
 
   if (!name) {
-    var pkg = require(join(process.cwd(), './package.json'));
+    var pkg = require(join(process.cwd(), 'package.json'));
     forName = pkg.name;
   }
 
@@ -138,12 +139,12 @@ function testInFolder(testCommand, folder) {
 function testCurrentModuleInDependent(dependentFolder) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder);
 
-  var pkg = require(join(process.cwd(), './package.json'));
+  var pkg = require(join(process.cwd(), 'package.json'));
   var currentModuleName = pkg.name;
-  var fullPath = join(dependentFolder, 'node_modules/' + currentModuleName);
+  var fullPath = join(dependentFolder, 'node_modules', currentModuleName);
   la(exists(fullPath), 'cannot find', fullPath);
 
-  var thisFolder = process.cwd() + '/*';
+  var thisFolder = join(process.cwd(), '*');
   console.log('Copying folder', quote(thisFolder), '\nto folder', quote(fullPath));
   cp('-rf', thisFolder, fullPath);
 
@@ -161,8 +162,8 @@ function testDependent(options, dependent) {
   var moduleTestCommand = nameParts[1] || DEFAULT_TEST_COMMAND;
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand);
 
-  var pkg = require(join(process.cwd(), './package.json'));
-  var toFolder = osTmpdir() + '/' + pkg.name + '@' + pkg.version + '-against-' + moduleName;
+  var pkg = require(join(process.cwd(), 'package.json'));
+  var toFolder = join(osTmpdir(), pkg.name + '@' + pkg.version + '-against-' + moduleName);
   console.log('testing folder %s', quote(toFolder));
 
   var timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS;
@@ -173,7 +174,7 @@ function testDependent(options, dependent) {
     prefix: toFolder
   }).timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(function formFullFolderName() {
-      return join(toFolder, 'node_modules/' + moduleName);
+      return join(toFolder, 'node_modules', moduleName);
     }).then(function checkInstalledFolder(folder) {
       la(check.unemptyString(folder), 'expected folder', folder);
       la(exists(folder), 'expected existing folder', folder);
