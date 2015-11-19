@@ -24,24 +24,23 @@
   },
   "contributors": [],
   "czConfig": {
-    "path": "node_modules/pre-git/node_modules/cz-conventional-changelog"
+    "path": "node_modules/cz-conventional-changelog"
   },
   "dependencies": {
     "chdir-promise": "0.2.1",
     "check-more-types": "2.1.2",
-    "check-types": "1.4.0",
     "commander": "2.9.0",
     "debug": "2.2.0",
     "hr": "0.1.3",
     "lazy-ass": "1.0.0",
     "lodash": "3.10.1",
     "npm-registry": "0.1.13",
-    "npm-utils": "0.2.0",
+    "npm-utils": "0.3.0",
     "os-tmpdir": "1.0.1",
     "q": "2.0.3",
     "quote": "0.4.0",
     "shelljs": "0.5.3",
-    "strip-json-comments": "1.0.4",
+    "strip-json-comments": "2.0.0",
     "update-notifier": "0.5.0"
   },
   "devDependencies": {
@@ -59,7 +58,7 @@
     "jshint-summary": "0.4.0",
     "matchdep": "1.0.0",
     "mocha": "2.3.3",
-    "pre-git": "1.2.1"
+    "pre-git": "1.2.11"
   },
   "engines": {
     "node": ">= 0.10.0"
@@ -80,7 +79,7 @@
   },
   "scripts": {
     "build": "grunt",
-    "commit": "./node_modules/pre-git/node_modules/commitizen/bin/git-cz",
+    "commit": "commit-wizard",
     "issues": "git-issues",
     "mocha": "mocha src/**/*-spec.js",
     "show-help": "./bin/dont-break --help",
