@@ -4,6 +4,7 @@ require('shelljs/global');
 var la = require('lazy-ass');
 var check = require('check-more-types');
 var path = require('path');
+var osTmpdir = require('os-tmpdir');
 var join = path.join;
 var quote = require('quote');
 var chdir = require('chdir-promise');
@@ -161,7 +162,7 @@ function testDependent(options, dependent) {
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand);
 
   var pkg = require(join(process.cwd(), './package.json'));
-  var toFolder = '/tmp/' + pkg.name + '@' + pkg.version + '-against-' + moduleName;
+  var toFolder = osTmpdir() + '/' + pkg.name + '@' + pkg.version + '-against-' + moduleName;
   console.log('testing folder %s', quote(toFolder));
 
   var timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS;
@@ -172,7 +173,7 @@ function testDependent(options, dependent) {
     prefix: toFolder
   }).timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(function formFullFolderName() {
-      return join(toFolder, 'lib/node_modules/' + moduleName);
+      return join(toFolder, 'node_modules/' + moduleName);
     }).then(function checkInstalledFolder(folder) {
       la(check.unemptyString(folder), 'expected folder', folder);
       la(exists(folder), 'expected existing folder', folder);
