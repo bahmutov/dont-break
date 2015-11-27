@@ -40,7 +40,7 @@ function readJSON(filename) {
   return JSON.parse(read(filename));
 }
 
-var npm = require('./top-dependents');
+var npm = require('top-dependents');
 la(check.schema({
   downloads: check.fn,
   sortedByDownloads: check.fn,
