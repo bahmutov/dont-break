@@ -80,7 +80,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:bahmutov/dont-break.git"
+    "url": "https://github.com/bahmutov/dont-break.git"
   },
   "scripts": {
     "build": "grunt",
