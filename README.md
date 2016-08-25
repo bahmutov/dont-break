@@ -5,24 +5,27 @@ Checks if the node module in the current folder breaks unit tests for specified 
 [Relevant discussion at npm](https://github.com/npm/npm/issues/6510),
 [Do not break dependant modules](http://glebbahmutov.com/blog/do-not-break-dependant-modules/).
 
-[![NPM][dont-break-icon] ][dont-break-url]
-
 [![Build status][dont-break-ci-image] ][dont-break-ci-url]
 [![dependencies][dont-break-dependencies-image] ][dont-break-dependencies-url]
 [![devdependencies][dont-break-devdependencies-image] ][dont-break-devdependencies-url]
+[![npm][dont-break-npm-image]](dont-break-npm-url)
 
-[dont-break-icon]: https://nodei.co/npm/dont-break.png?downloads=true
+[dont-break-icon]: https://nodei.co/npm/dont-break.svg?downloads=true
 [dont-break-url]: https://npmjs.org/package/dont-break
-[dont-break-ci-image]: https://travis-ci.org/bahmutov/dont-break.png?branch=master
+[dont-break-ci-image]: https://travis-ci.org/bahmutov/dont-break.svg?branch=master
 [dont-break-ci-url]: https://travis-ci.org/bahmutov/dont-break
-[dont-break-dependencies-image]: https://david-dm.org/bahmutov/dont-break.png
+[dont-break-dependencies-image]: https://david-dm.org/bahmutov/dont-break.svg
 [dont-break-dependencies-url]: https://david-dm.org/bahmutov/dont-break
-[dont-break-devdependencies-image]: https://david-dm.org/bahmutov/dont-break/dev-status.png
+[dont-break-devdependencies-image]: https://david-dm.org/bahmutov/dont-break/dev-status.svg
 [dont-break-devdependencies-url]: https://david-dm.org/bahmutov/dont-break#info=devDependencies
+[dont-break-npm-url]: https://img.shields.io/npm/dm/dont-break
+[dont-break-npm-image]: https://img.shields.io/npm/dm/dont-break.svg?maxAge=2592000
 
 ## Install
+```
+npm install -g dont-break
+```
 
-    npm install -g dont-break
 
 ## Use
 
@@ -45,10 +48,10 @@ save to `.dont-break` and check.
 2. Second project `foo-user` depends on `foo`.
 
 `foo-user` only works if it gets string `foo` from the module it depends on, like this:
-
-    var str = require('foo');
-    console.assert(str === 'foo', 'value of foo should be "foo", but is ' + str);
-
+```js
+const str = require('foo');
+console.assert(str === 'foo', 'value of foo should be "foo", but is ' + str);
+```
 `foo` has only a single release 0.1.0 that works for `foo-user` project.
 
 The author of `foo` changes code to be `module.exports = 'bar';` and releases it as 0.2.0.
@@ -60,12 +63,14 @@ changes.
 
 Instead, before publishing new version to NPM, project `foo` can create a file in its
 project folder `.dont-break` with names of dependent projects to test
-
-    echo foo-user > .dont-break
-
+```bash
+echo foo-user > .dont-break
+```
 You can check if the current code breaks listed dependent project by running
 
-    dont-break
+```bash
+dont-break
+```
 
 This will install each dependent project from `.dont-break` file into `/tmp/dont-break...` folder,
 will run the dependent's unit tests using `npm test` to make sure they work initially, then
@@ -73,25 +78,25 @@ will copy the current project into the temp folder, overwriting the previous wor
 Then it will run the tests again, throwing an exception if they stopped working.
 
 In the example case, it will report something like this
-
-    $ dont-break
-    dependents [ 'foo-user' ]
-    testing foo-user
-      installing foo-user
-    installed into /tmp/foo@0.0.0-against-foo-user
-      npm test
-    tests work in /tmp/foo@0.0.0-against-foo-user/lib/node_modules/foo-user
-    copied /Users/gleb/git/foo/* to /tmp/foo@0.0.0-against-foo-user/lib/node_modules/foo-user/node_modules/foo
-      npm test
-    npm test returned 1
-    test errors:
-    AssertionError: value of foo should be "foo", but is bar
-    npm ERR! Test failed.  See above for more details.
-    npm ERR! not ok code 0
-    tests did not work in /tmp/foo@0.0.0-against-foo-user/lib/node_modules/foo-user
-    code 1
-    FAIL: Current version break dependents
-
+```bash
+$ dont-break
+dependents [ 'foo-user' ]
+testing foo-user
+  installing foo-user
+installed into /tmp/foo@0.0.0-against-foo-user
+  npm test
+tests work in /tmp/foo@0.0.0-against-foo-user/lib/node_modules/foo-user
+copied /Users/gleb/git/foo/* to /tmp/foo@0.0.0-against-foo-user/lib/node_modules/foo-user/node_modules/foo
+  npm test
+npm test returned 1
+test errors:
+AssertionError: value of foo should be "foo", but is bar
+npm ERR! Test failed.  See above for more details.
+npm ERR! not ok code 0
+tests did not work in /tmp/foo@0.0.0-against-foo-user/lib/node_modules/foo-user
+code 1
+FAIL: Current version break dependents
+```
 The message clearly tells you that the dependent projects as they are right now cannot
 upgrade to the version you are about to release.
 
@@ -101,12 +106,16 @@ You can specify a custom test command per dependent module. Separate the name of
 from the test command using `:` For example, to run `grunt test` for `foo-module-name`,
 but default command for module `bar-name`, list in `.dont-break` the following:
 
-    foo-module-name: grunt test
-    bar-name
+```
+foo-module-name: grunt test
+bar-name
+```
 
 You can also specify a longer installation time out, in seconds, using CLI option
 
-    dont-break --timeout 30
+```
+dont-break --timeout 30
+```
 
 ## Related
 
@@ -121,22 +130,26 @@ against the dependent projects using `dont-break`. For example, the project
 are run on [TravisCI](https://travis-ci.org/bahmutov/boggle) using
 pretty standard [.travis.yml](https://github.com/bahmutov/boggle/blob/master/.travis.yml) file
 
-    language: node_js
-    node_js:
-      - "0.12"
-      - "4"
-    branches:
-      only:
-        - master
-    before_script:
-      - npm install -g grunt-cli
+```yml
+language: node_js
+node_js:
+  - "0.12"
+  - "4"
+branches:
+  only:
+    - master
+before_script:
+  - npm install -g grunt-cli
+```
 
 Then I setup a separate build service on [CircleCi](https://circleci.com/gh/bahmutov/boggle)
 just to run the `npm run dont-break` command from the `package.json`
 
-    "scripts": {
-        "dont-break": "dont-break --timeout 30"
-    }
+```json
+"scripts": {
+    "dont-break": "dont-break --timeout 30"
+}
+```
 
 We are assuming a global installation of `dont-break`, and the project lists
 the projects to check in the
@@ -148,15 +161,17 @@ To run `dont-break` on CircleCI, I created the
 [circle.yml](https://github.com/bahmutov/boggle/blob/master/circle.yml) file.
 It should be clear what it does - installs `dont-break`, and runs the npm script command.
 
-    machine:
-      node:
-        version: "0.12"
-    dependencies:
-      post:
-        - npm install -g dont-break
-    test:
-      override:
-        - npm run dont-break
+```yml
+machine:
+  node:
+    version: "0.12"
+dependencies:
+  post:
+    - npm install -g dont-break
+test:
+  override:
+    - npm run dont-break
+```
 
 To make the status visible, I included the CircleCI badges in the README file.
 
