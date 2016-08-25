@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if the current version of your package would break dependent projects",
-  "version": "0.4.2",
+  "version": "0.0.0-semantic-release",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./bin/dont-break"
@@ -57,7 +57,8 @@
     "jshint-summary": "0.4.0",
     "matchdep": "1.0.1",
     "mocha": "2.3.3",
-    "pre-git": "3.10.0"
+    "pre-git": "3.10.0",
+    "semantic-release": "4.3.5"
   },
   "engines": {
     "node": ">= 0.10.0"
@@ -86,6 +87,7 @@
     "build": "grunt",
     "issues": "git-issues",
     "mocha": "mocha src/**/*-spec.js",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "show-help": "./bin/dont-break --help",
     "size": "t=\"$(npm pack .)\"; wc -c \"${t}\"; tar tvf \"${t}\"; rm \"${t}\";",
     "test": "grunt && npm run show-help",
