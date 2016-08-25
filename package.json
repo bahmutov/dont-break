@@ -14,18 +14,22 @@
       "commit-msg": "simple",
       "pre-commit": [
         "npm run mocha",
-        "npm test",
-        "npm version"
+        "npm test"
       ],
       "post-commit": "npm version",
-      "pre-push": [],
+      "pre-push": [
+        "npm run size"
+      ],
       "post-merge": []
     }
   },
   "contributors": [],
-  "czConfig": {
-    "path": "node_modules/cz-conventional-changelog"
-  },
+  "files": [
+    "bin",
+    "index.js",
+    "src/*.js",
+    "!src/*-spec.js"
+  ],
   "dependencies": {
     "chdir-promise": "0.2.1",
     "check-more-types": "2.22.0",
@@ -83,6 +87,7 @@
     "issues": "git-issues",
     "mocha": "mocha src/**/*-spec.js",
     "show-help": "./bin/dont-break --help",
+    "size": "t=\"$(npm pack .)\"; wc -c \"${t}\"; tar tvf \"${t}\"; rm \"${t}\";",
     "test": "grunt && npm run show-help",
     "test-empty": "node src/test/run-dont-break.js"
   }
