@@ -17,3 +17,6 @@ npm install
 npm test
 echo "Boggle is working"
 
+git log --oneline -n 5
+dont-break
+

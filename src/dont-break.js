@@ -27,9 +27,9 @@ var stripComments = require('strip-json-comments')
 // write found dependencies into a hidden file
 var dontBreakFilename = './.dont-break'
 
-var NAME_COMMAND_SEPARATOR = ':'
-var DEFAULT_TEST_COMMAND = 'npm test'
-var INSTALL_TIMEOUT_SECONDS = 10
+const NAME_COMMAND_SEPARATOR = ':'
+const DEFAULT_TEST_COMMAND = 'npm test'
+const INSTALL_TIMEOUT_SECONDS = 10
 
 function install (options) {
   return q(npmInstall(options))
@@ -40,7 +40,7 @@ function readJSON (filename) {
   return JSON.parse(read(filename))
 }
 
-var npm = require('top-dependents')
+const npm = require('top-dependents')
 la(check.schema({
   downloads: check.fn,
   sortedByDownloads: check.fn,
@@ -166,7 +166,7 @@ function testDependent (options, dependent) {
   var toFolder = join(osTmpdir(), pkg.name + '@' + pkg.version + '-against-' + moduleName)
   console.log('testing folder %s', quote(toFolder))
 
-  var timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS
+  const timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS
   la(check.positiveNumber(timeoutSeconds), 'wrong timeout', timeoutSeconds, options)
 
   return install({
@@ -211,7 +211,7 @@ function testDependent (options, dependent) {
 }
 
 function testDependents (options, dependents) {
-  la(check.array(dependents), dependents)
+  la(check.array(dependents), 'expected dependents', dependents)
 
   // TODO switch to parallel testing!
   return dependents.reduce(function (prev, dependent) {
@@ -226,7 +226,7 @@ function dontBreakDependents (options, dependents) {
   dependents = _.invoke(dependents, 'trim')
   banner('  testing the following dependents\n  ' + dependents)
 
-  var logSuccess = function logSuccess () {
+  const logSuccess = function logSuccess () {
     console.log('all dependents tested')
   }
 
@@ -255,12 +255,12 @@ function dontBreak (options) {
     })
   }
 
-  var logPass = function logPass () {
+  const logPass = function logPass () {
     console.log('PASS: Current version does not break dependents')
     return true
   }
 
-  var logFail = function logFail (err) {
+  const logFail = function logFail (err) {
     console.log('FAIL: Current version breaks dependents')
     if (err && err.message) {
       console.error('REPORTED ERROR:', err.message)
