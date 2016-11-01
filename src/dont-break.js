@@ -1,20 +1,19 @@
+'use strict'
+
 require('shelljs/global')
 /* global cp */
 
-var la = require('lazy-ass')
-var check = require('check-more-types')
+const la = require('lazy-ass')
+const check = require('check-more-types')
 var path = require('path')
-var osTmpdir = require('os-tmpdir')
+const osTmpdir = require('os-tmpdir')
 var join = path.join
 var quote = require('quote')
 var chdir = require('chdir-promise')
 var banner = require('./banner')
 
-var _ = require('lodash')
-var q = require('q')
-
-var npmInstall = require('npm-utils').install
-la(check.fn(npmInstall), 'install should be a function', npmInstall)
+const _ = require('lodash')
+const q = require('q')
 
 var npmTest = require('npm-utils').test
 la(check.fn(npmTest), 'npm test should be a function', npmTest)
@@ -31,9 +30,7 @@ const NAME_COMMAND_SEPARATOR = ':'
 const DEFAULT_TEST_COMMAND = 'npm test'
 const INSTALL_TIMEOUT_SECONDS = 10
 
-function install (options) {
-  return q(npmInstall(options))
-}
+const install = require('./install-dependency')
 
 function readJSON (filename) {
   la(exists(filename), 'cannot find JSON file to load', filename)
@@ -162,22 +159,26 @@ function testDependent (options, dependent) {
   var moduleTestCommand = nameParts[1] || DEFAULT_TEST_COMMAND
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand)
 
-  var pkg = require(join(process.cwd(), 'package.json'))
-  var toFolder = join(osTmpdir(), pkg.name + '@' + pkg.version + '-against-' + moduleName)
+  const pkg = require(join(process.cwd(), 'package.json'))
+  const depName = pkg.name + '-v' + pkg.version + '-against-' + moduleName
+  const toFolder = join(osTmpdir(), depName)
   console.log('testing folder %s', quote(toFolder))
 
   const timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS
   la(check.positiveNumber(timeoutSeconds), 'wrong timeout', timeoutSeconds, options)
 
-  return install({
+  const installOptions = {
     name: moduleName,
     prefix: toFolder
-  }).timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
+  }
+  return install(installOptions)
+    .timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(function formFullFolderName () {
-      return join(toFolder, 'node_modules', moduleName)
-    }).then(function checkInstalledFolder (folder) {
+      return join(toFolder, 'lib', 'node_modules', moduleName)
+    })
+    .then(function checkInstalledFolder (folder) {
       la(check.unemptyString(folder), 'expected folder', folder)
-      la(exists(folder), 'expected existing folder', folder)
+      la(exists(folder), 'expected folder to exist', folder)
       return folder
     })
     .then(function printMessage (folder) {
