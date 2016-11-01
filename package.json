@@ -16,7 +16,6 @@
         "npm run mocha",
         "npm test"
       ],
-      "post-commit": "npm version",
       "pre-push": [
         "npm run size"
       ],
