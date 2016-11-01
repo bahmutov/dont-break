@@ -43,22 +43,18 @@
     "update-notifier": "0.5.0"
   },
   "devDependencies": {
-    "eslint-rules": "0.4.3",
     "git-issues": "1.2.0",
     "grunt": "0.4.5",
     "grunt-cli": "0.1.13",
-    "grunt-contrib-jshint": "0.11.3",
     "grunt-contrib-watch": "0.6.1",
     "grunt-deps-ok": "0.8.0",
-    "grunt-eslint": "15.0.0",
     "grunt-filenames": "0.4.0",
-    "grunt-jscs": "2.3.0",
     "grunt-nice-package": "0.10.2",
-    "jshint-summary": "0.4.0",
     "matchdep": "1.0.1",
     "mocha": "2.3.3",
     "pre-git": "3.10.0",
-    "semantic-release": "4.3.5"
+    "semantic-release": "4.3.5",
+    "standard": "8.5.0"
   },
   "engines": {
     "node": ">= 0.10.0"
@@ -86,7 +82,9 @@
   "scripts": {
     "build": "grunt",
     "issues": "git-issues",
+    "lint": "standard --verbose --fix bin/*.js src/*.js",
     "mocha": "mocha src/**/*-spec.js",
+    "pretest": "npm run lint",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "show-help": "./bin/dont-break --help",
     "size": "t=\"$(npm pack .)\"; wc -c \"${t}\"; tar tvf \"${t}\"; rm \"${t}\";",
