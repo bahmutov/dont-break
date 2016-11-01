@@ -44,12 +44,6 @@
   },
   "devDependencies": {
     "git-issues": "1.2.0",
-    "grunt": "0.4.5",
-    "grunt-cli": "0.1.13",
-    "grunt-contrib-watch": "0.6.1",
-    "grunt-deps-ok": "0.8.0",
-    "grunt-filenames": "0.4.0",
-    "grunt-nice-package": "0.10.2",
     "matchdep": "1.0.1",
     "mocha": "2.3.3",
     "pre-git": "3.10.0",
@@ -80,7 +74,6 @@
     "url": "https://github.com/bahmutov/dont-break.git"
   },
   "scripts": {
-    "build": "grunt",
     "issues": "git-issues",
     "lint": "standard --verbose --fix bin/*.js src/*.js",
     "mocha": "mocha src/**/*-spec.js",
@@ -88,7 +81,7 @@
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "show-help": "./bin/dont-break --help",
     "size": "t=\"$(npm pack .)\"; wc -c \"${t}\"; tar tvf \"${t}\"; rm \"${t}\";",
-    "test": "grunt && npm run show-help",
+    "test": "npm run show-help",
     "test-empty": "node src/test/run-dont-break.js"
   }
 }
