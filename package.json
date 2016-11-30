@@ -17,6 +17,7 @@
         "npm test"
       ],
       "pre-push": [
+        "npm run e2e",
         "npm run size"
       ],
       "post-merge": []
