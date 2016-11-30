@@ -26,15 +26,9 @@ npm install -g dont-break
 ## Use
 
 * Create `.dont-break.json` file in the root of your package,
-list module names that you would like to test as an array.
-* Run `dont-break` any time to test latest version of each dependent module against the curent code
-
-Picking projects to test manually is a judgement call. Dont-break can fetch top N most downloaded
-or most starred dependent modules and save the list.
-* run `dont-break --top-downloads <N>` to find top N most downloaded dependent modules,
-save to `.dont-break` and check. This will overwrite `.dont-break` file.
-* run `dont-break --top-starred <N>` to find top N most starred dependent modules,
-save to `.dont-break` and check.
+  list module names that you would like to test as an array.
+* Run `dont-break` any time to test latest version of each dependent module
+  against the curent code
 
 ## Example
 
@@ -95,6 +89,28 @@ FAIL: Current version break dependents
 ```
 The message clearly tells you that the dependent projects as they are right now cannot
 upgrade to the version you are about to release.
+
+## Dependencies
+
+You can specify GitHub repos as dependencies, because they most likely will
+have tests. For example in `.dont-break.json`
+
+```js
+// you can use JavaScript comments in this file .dont-break.json
+[
+  "https://github.com/bahmutov/dont-break-bar"
+]
+```
+
+Picking projects to test manually is a judgement call.
+Dont-break can fetch top N most downloaded
+or most starred dependent modules and save the list.
+* run `dont-break --top-downloads <N>` to find top N most downloaded dependent modules,
+save to `.dont-break.json` and check.
+* run `dont-break --top-starred <N>` to find top N most starred dependent modules,
+save to `.dont-break.json` and check.
+
+The above commands overwrite `.dont-break.json` file.
 
 ## Custom test command (in progress)
 
