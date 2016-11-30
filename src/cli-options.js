@@ -1,4 +1,6 @@
-var log = require('debug')('dont')
+'use strict'
+
+const debug = require('debug')('dont-break')
 function list (val) {
   return val.split(',')
 }
@@ -15,7 +17,7 @@ program
     'Wait for N seconds when installing a package', parseInt)
   .parse(process.argv)
 
-log('command line options')
-log(program)
+debug('command line options')
+debug(program)
 
 module.exports = program

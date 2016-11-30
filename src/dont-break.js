@@ -11,6 +11,7 @@ var join = path.join
 var quote = require('quote')
 var chdir = require('chdir-promise')
 var banner = require('./banner')
+const debug = require('debug')('dont-break')
 
 const _ = require('lodash')
 const q = require('q')
@@ -24,7 +25,7 @@ var exists = fs.existsSync
 
 var stripComments = require('strip-json-comments')
 // write found dependencies into a hidden file
-var dontBreakFilename = './.dont-break'
+const dontBreakFilename = './.dont-break'
 
 const NAME_COMMAND_SEPARATOR = ':'
 const DEFAULT_TEST_COMMAND = 'npm test'
@@ -224,6 +225,8 @@ function testDependents (options, dependents) {
 
 function dontBreakDependents (options, dependents) {
   la(check.arrayOfStrings(dependents), 'invalid dependents', dependents)
+  debug('dependents', dependents)
+
   dependents = _.invoke(dependents, 'trim')
   banner('  testing the following dependents\n  ' + dependents)
 

@@ -193,6 +193,9 @@ This project is tested end to end using two small projects:
 
 To see open github issues, use command `npm run issues`
 
+To see verbose log message, run with `DEBUG=dont-break ...` environment
+variable.
+
 ### Small print
 
 Author: Gleb Bahmutov &copy; 2014
