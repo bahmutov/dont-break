@@ -83,6 +83,7 @@
     "show-help": "./bin/dont-break --help",
     "size": "t=\"$(npm pack .)\"; wc -c \"${t}\"; tar tvf \"${t}\"; rm \"${t}\";",
     "test": "npm run show-help",
-    "test-empty": "node src/test/run-dont-break.js"
+    "test-empty": "node src/test/run-dont-break.js",
+    "e2e": "./test/e2e.sh"
   }
 }

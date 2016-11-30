@@ -10,13 +10,9 @@ mkdir $folder
 cd $folder
 echo "Created test folder $folder"
 
-echo "Cloning boggle"
-git clone https://github.com/bahmutov/boggle.git
-cd boggle
-npm install
-npm test
-echo "Boggle is working"
-
-git log --oneline -n 5
-dont-break
-
+echo "Cloning first module"
+git clone https://github.com/bahmutov/dont-break-foo.git
+cd dont-break-foo
+npm install --prod
+npm run dont-break
+echo "dont-break is working"

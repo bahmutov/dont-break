@@ -11,6 +11,8 @@ before_script:
   - npm prune
 script:
   - npm test
+  - echo Unit tests passed, running end to end tests
+  - npm run e2e
 after_success:
   - npm run size
   - npm run semantic-release
