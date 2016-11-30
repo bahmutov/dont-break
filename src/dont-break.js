@@ -9,9 +9,10 @@ var path = require('path')
 const osTmpdir = require('os-tmpdir')
 var join = path.join
 var quote = require('quote')
-var chdir = require('chdir-promise')
+const chdir = require('chdir-promise')
 var banner = require('./banner')
 const debug = require('debug')('dont-break')
+const isRepoUrl = require('./is-repo-url')
 
 const _ = require('lodash')
 const q = require('q')
@@ -150,19 +151,36 @@ function testCurrentModuleInDependent (dependentFolder) {
   return dependentFolder
 }
 
+function getDependencyName (dependent) {
+  if (isRepoUrl(dependent)) {
+    debug('dependent is git repo url %s', dependent)
+    return dependent
+  }
+  const nameParts = dependent.split(NAME_COMMAND_SEPARATOR)
+  la(nameParts.length, 'expected at least module name', dependent)
+  const moduleName = nameParts[0].trim()
+  return moduleName
+}
+
 function testDependent (options, dependent) {
   la(check.unemptyString(dependent), 'invalid dependent', dependent)
   banner('  testing', quote(dependent))
 
-  var nameParts = dependent.split(NAME_COMMAND_SEPARATOR)
-  la(nameParts.length, 'expected at least module name', dependent)
-  var moduleName = nameParts[0].trim()
-  var moduleTestCommand = nameParts[1] || DEFAULT_TEST_COMMAND
+  const moduleName = getDependencyName(dependent)
+
+  // TODO grab test command from dependent object
+  // var nameParts = dependent.split(NAME_COMMAND_SEPARATOR)
+  // la(nameParts.length, 'expected at least module name', dependent)
+  // var moduleName = nameParts[0].trim()
+  // var moduleTestCommand = nameParts[1] || DEFAULT_TEST_COMMAND
+  var moduleTestCommand = DEFAULT_TEST_COMMAND
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand)
 
   const pkg = require(join(process.cwd(), 'package.json'))
   const depName = pkg.name + '-v' + pkg.version + '-against-' + moduleName
-  const toFolder = join(osTmpdir(), depName)
+  const safeName = _.kebabCase(_.deburr(depName))
+  debug('original name "%s", safe "%s"', depName, safeName)
+  const toFolder = join(osTmpdir(), safeName)
   console.log('testing folder %s', quote(toFolder))
 
   const timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS
