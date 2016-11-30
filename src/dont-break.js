@@ -1,8 +1,5 @@
 'use strict'
 
-require('shelljs/global')
-/* global cp */
-
 const la = require('lazy-ass')
 const check = require('check-more-types')
 var path = require('path')
@@ -17,7 +14,8 @@ const isRepoUrl = require('./is-repo-url')
 const _ = require('lodash')
 const q = require('q')
 
-var npmTest = require('npm-utils').test
+const npmInstall = require('npm-utils').install
+const npmTest = require('npm-utils').test
 la(check.fn(npmTest), 'npm test should be a function', npmTest)
 
 var fs = require('fs')
@@ -138,17 +136,23 @@ function testInFolder (testCommand, folder) {
 function testCurrentModuleInDependent (dependentFolder) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
 
-  var pkg = require(join(process.cwd(), 'package.json'))
-  var currentModuleName = pkg.name
-  var fullPath = join(dependentFolder, 'node_modules', currentModuleName)
-  la(exists(fullPath), 'cannot find', fullPath)
+  debug('testing the current module in %s', dependentFolder)
+  const thisFolder = process.cwd()
+  debug('current module folder %s', thisFolder)
 
-  var thisFolder = join(process.cwd(), '*')
-  console.log('Copying folder', quote(thisFolder), '\nto folder', quote(fullPath))
-  cp('-rf', thisFolder, fullPath)
+  const options = {
+    name: thisFolder
+  }
 
-  console.log('copied', thisFolder, 'to', fullPath)
-  return dependentFolder
+  return chdir.to(dependentFolder)
+    .then(() => npmInstall(options))
+    .then(() => {
+      console.log('Installed\n %s\n in %s', thisFolder, dependentFolder)
+    })
+    .finally(chdir.from)
+    .then(() => {
+      return dependentFolder
+    })
 }
 
 function getDependencyName (dependent) {
@@ -167,6 +171,16 @@ function testDependent (options, dependent) {
   banner('  testing', quote(dependent))
 
   const moduleName = getDependencyName(dependent)
+
+  function formFullFolderName () {
+    if (isRepoUrl(dependent)) {
+      // simple repo installation
+      return toFolder
+    } else {
+      // it was NPM install
+      return join(toFolder, 'lib', 'node_modules', moduleName)
+    }
+  }
 
   // TODO grab test command from dependent object
   // var nameParts = dependent.split(NAME_COMMAND_SEPARATOR)
@@ -192,9 +206,7 @@ function testDependent (options, dependent) {
   }
   return install(installOptions)
     .timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
-    .then(function formFullFolderName () {
-      return join(toFolder, 'lib', 'node_modules', moduleName)
-    })
+    .then(formFullFolderName)
     .then(function checkInstalledFolder (folder) {
       la(check.unemptyString(folder), 'expected folder', folder)
       la(exists(folder), 'expected folder to exist', folder)
