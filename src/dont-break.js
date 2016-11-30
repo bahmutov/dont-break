@@ -25,7 +25,7 @@ var exists = fs.existsSync
 
 var stripComments = require('strip-json-comments')
 // write found dependencies into a hidden file
-const dontBreakFilename = './.dont-break'
+const dontBreakFilename = './.dont-break.json'
 
 const NAME_COMMAND_SEPARATOR = ':'
 const DEFAULT_TEST_COMMAND = 'npm test'
@@ -64,7 +64,7 @@ function saveTopDependents (name, metric, n) {
       // TODO use template library instead of manual concat
       var str = '// top ' + n + ' most dependent modules by ' + metric + ' for ' + name + '\n'
       str += '// data from NPM registry on ' + (new Date()).toDateString() + '\n'
-      str += topDependents.join('\n') + '\n'
+      str += JSON.stringify(topDependents, null, 2) + '\n'
       return q.ninvoke(fs, 'writeFile', dontBreakFilename, str, 'utf-8').then(function () {
         console.log('saved top', n, 'dependents for', name, 'by', metric, 'to', dontBreakFilename)
         return topDependents
@@ -74,12 +74,12 @@ function saveTopDependents (name, metric, n) {
 
 function getDependentsFromFile () {
   return q.ninvoke(fs, 'readFile', dontBreakFilename, 'utf-8')
-    .then(function (text) {
-      text = stripComments(text)
-      return text.split('\n').filter(function (line) {
-        return line.trim().length
-      })
+    .then(stripComments)
+    .then(text => {
+      debug('loaded dependencies file', text)
+      return text
     })
+    .then(JSON.parse)
     .catch(function (err) {
       // the file does not exist probably
       console.log(err && err.message)
@@ -247,6 +247,7 @@ function dontBreak (options) {
   options = options || {}
   options.folder = options.folder || process.cwd()
 
+  debug('working in folder %s', options.folder)
   var start = chdir.to(options.folder)
 
   if (check.arrayOfStrings(options.dep)) {
@@ -255,6 +256,7 @@ function dontBreak (options) {
     })
   } else {
     start = start.then(function () {
+      debug('getting dependents')
       return getDependents(options)
     })
   }

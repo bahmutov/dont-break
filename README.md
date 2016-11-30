@@ -25,8 +25,8 @@ npm install -g dont-break
 
 ## Use
 
-* Create `.dont-break` file in the root of your package, list module names (one per line) that you would like
-to test.
+* Create `.dont-break.json` file in the root of your package,
+list module names that you would like to test as an array.
 * Run `dont-break` any time to test latest version of each dependent module against the curent code
 
 Picking projects to test manually is a judgement call. Dont-break can fetch top N most downloaded
@@ -58,9 +58,9 @@ changes.
 `foo-user` is now broken!
 
 Instead, before publishing new version to NPM, project `foo` can create a file in its
-project folder `.dont-break` with names of dependent projects to test
+project folder `.dont-break.json` with names of dependent projects to test
 ```bash
-echo foo-user > .dont-break
+echo '["foo-user"]' > .dont-break.json
 ```
 You can check if the current code breaks listed dependent project by running
 
@@ -68,7 +68,7 @@ You can check if the current code breaks listed dependent project by running
 dont-break
 ```
 
-This will install each dependent project from `.dont-break` file into `/tmp/dont-break...` folder,
+This will install each dependent project from `.dont-break.json` file into `/tmp/dont-break...` folder,
 will run the dependent's unit tests using `npm test` to make sure they work initially, then
 will copy the current project into the temp folder, overwriting the previous working version.
 Then it will run the tests again, throwing an exception if they stopped working.
@@ -96,11 +96,11 @@ FAIL: Current version break dependents
 The message clearly tells you that the dependent projects as they are right now cannot
 upgrade to the version you are about to release.
 
-## Custom test command
+## Custom test command (in progress)
 
 You can specify a custom test command per dependent module. Separate the name of the module
 from the test command using `:` For example, to run `grunt test` for `foo-module-name`,
-but default command for module `bar-name`, list in `.dont-break` the following:
+but default command for module `bar-name`, list in `.dont-break.json` the following:
 
 ```
 foo-module-name: grunt test
