@@ -166,6 +166,15 @@ function getDependencyName (dependent) {
   return moduleName
 }
 
+function getDependentVersion (pkg, name) {
+  if (check.object(pkg.dependencies) && pkg.dependencies[name]) {
+    return pkg.dependencies[name]
+  }
+  if (check.object(pkg.devDependencies) && pkg.devDependencies[name]) {
+    return pkg.devDependencies[name]
+  }
+}
+
 function testDependent (options, dependent) {
   la(check.unemptyString(dependent), 'invalid dependent', dependent)
   banner('  testing', quote(dependent))
@@ -215,8 +224,10 @@ function testDependent (options, dependent) {
     .then(function printMessage (folder) {
       var installedPackage = readJSON(join(folder, 'package.json'))
       var moduleVersion = installedPackage.version
-      var currentVersion = installedPackage.dependencies[pkg.name] ||
-        installedPackage.devDependencies[pkg.name]
+      var currentVersion = getDependentVersion(installedPackage, pkg.name)
+      la(check.unemptyString(currentVersion),
+        'could not find dependency on', pkg.name,
+        'in module', installedPackage.name)
       banner('installed', moduleName + '@' + moduleVersion,
         '\ninto', folder,
         '\ncurrently uses', pkg.name + '@' + currentVersion,
