@@ -28,7 +28,7 @@ const dontBreakFilename = './.dont-break.json'
 
 const NAME_COMMAND_SEPARATOR = ':'
 const DEFAULT_TEST_COMMAND = 'npm test'
-const INSTALL_TIMEOUT_SECONDS = 10
+const INSTALL_TIMEOUT_SECONDS = 3*60
 
 const install = require('./install-dependency')
 
