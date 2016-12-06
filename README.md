@@ -39,7 +39,7 @@ npm install -g dont-break
 
 `foo-user` only works if it gets string `foo` from the module it depends on, like this:
 ```js
-const str = require('foo');
+var str = require('foo');
 console.assert(str === 'foo', 'value of foo should be "foo", but is ' + str);
 ```
 `foo` has only a single release 0.1.0 that works for `foo-user` project.

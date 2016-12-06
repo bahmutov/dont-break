@@ -1,6 +1,6 @@
 'use strict'
 
-const debug = require('debug')('dont-break')
+var debug = require('debug')('dont-break')
 function list (val) {
   return val.split(',')
 }

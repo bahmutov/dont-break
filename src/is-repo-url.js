@@ -1,4 +1,4 @@
-const is = require('check-more-types')
+var is = require('check-more-types')
 
 function isGitHub (s) {
   return s.indexOf('github') !== -1

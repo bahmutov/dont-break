@@ -1,21 +1,21 @@
 'use strict'
 
-const la = require('lazy-ass')
-const check = require('check-more-types')
+var la = require('lazy-ass')
+var check = require('check-more-types')
 var path = require('path')
-const osTmpdir = require('os-tmpdir')
+var osTmpdir = require('os-tmpdir')
 var join = path.join
 var quote = require('quote')
-const chdir = require('chdir-promise')
+var chdir = require('chdir-promise')
 var banner = require('./banner')
-const debug = require('debug')('dont-break')
-const isRepoUrl = require('./is-repo-url')
+var debug = require('debug')('dont-break')
+var isRepoUrl = require('./is-repo-url')
 
-const _ = require('lodash')
-const q = require('q')
+var _ = require('lodash')
+var q = require('q')
 
-const npmInstall = require('npm-utils').install
-const npmTest = require('npm-utils').test
+var npmInstall = require('npm-utils').install
+var npmTest = require('npm-utils').test
 la(check.fn(npmTest), 'npm test should be a function', npmTest)
 
 var fs = require('fs')
@@ -24,20 +24,20 @@ var exists = fs.existsSync
 
 var stripComments = require('strip-json-comments')
 // write found dependencies into a hidden file
-const dontBreakFilename = './.dont-break.json'
+var dontBreakFilename = './.dont-break.json'
 
-const NAME_COMMAND_SEPARATOR = ':'
-const DEFAULT_TEST_COMMAND = 'npm test'
-const INSTALL_TIMEOUT_SECONDS = 3 * 60
+var NAME_COMMAND_SEPARATOR = ':'
+var DEFAULT_TEST_COMMAND = 'npm test'
+var INSTALL_TIMEOUT_SECONDS = 3 * 60
 
-const install = require('./install-dependency')
+var install = require('./install-dependency')
 
 function readJSON (filename) {
   la(exists(filename), 'cannot find JSON file to load', filename)
   return JSON.parse(read(filename))
 }
 
-const npm = require('top-dependents')
+var npm = require('top-dependents')
 la(check.schema({
   downloads: check.fn,
   sortedByDownloads: check.fn,
@@ -74,7 +74,7 @@ function saveTopDependents (name, metric, n) {
 function getDependentsFromFile () {
   return q.ninvoke(fs, 'readFile', dontBreakFilename, 'utf-8')
     .then(stripComments)
-    .then(text => {
+    .then(function (text) {
       debug('loaded dependencies file', text)
       return text
     })
@@ -137,20 +137,20 @@ function testCurrentModuleInDependent (dependentFolder) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
 
   debug('testing the current module in %s', dependentFolder)
-  const thisFolder = process.cwd()
+  var thisFolder = process.cwd()
   debug('current module folder %s', thisFolder)
 
-  const options = {
+  var options = {
     name: thisFolder
   }
 
   return chdir.to(dependentFolder)
-    .then(() => npmInstall(options))
-    .then(() => {
+    .then(function () { return npmInstall(options) })
+    .then(function () {
       console.log('Installed\n %s\n in %s', thisFolder, dependentFolder)
     })
     .finally(chdir.from)
-    .then(() => {
+    .then(function () {
       return dependentFolder
     })
 }
@@ -199,17 +199,17 @@ function testDependent (options, dependent) {
   var moduleTestCommand = DEFAULT_TEST_COMMAND
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand)
 
-  const pkg = require(join(process.cwd(), 'package.json'))
-  const depName = pkg.name + '-v' + pkg.version + '-against-' + moduleName
-  const safeName = _.kebabCase(_.deburr(depName))
+  var pkg = require(join(process.cwd(), 'package.json'))
+  var depName = pkg.name + '-v' + pkg.version + '-against-' + moduleName
+  var safeName = _.kebabCase(_.deburr(depName))
   debug('original name "%s", safe "%s"', depName, safeName)
-  const toFolder = join(osTmpdir(), safeName)
+  var toFolder = join(osTmpdir(), safeName)
   console.log('testing folder %s', quote(toFolder))
 
-  const timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS
+  var timeoutSeconds = options.timeout || INSTALL_TIMEOUT_SECONDS
   la(check.positiveNumber(timeoutSeconds), 'wrong timeout', timeoutSeconds, options)
 
-  const installOptions = {
+  var installOptions = {
     name: moduleName,
     prefix: toFolder
   }
@@ -271,7 +271,7 @@ function dontBreakDependents (options, dependents) {
   dependents = _.invoke(dependents, 'trim')
   banner('  testing the following dependents\n  ' + dependents)
 
-  const logSuccess = function logSuccess () {
+  var logSuccess = function logSuccess () {
     console.log('all dependents tested')
   }
 
@@ -302,12 +302,12 @@ function dontBreak (options) {
     })
   }
 
-  const logPass = function logPass () {
+  var logPass = function logPass () {
     console.log('PASS: Current version does not break dependents')
     return true
   }
 
-  const logFail = function logFail (err) {
+  var logFail = function logFail (err) {
     console.log('FAIL: Current version breaks dependents')
     if (err && err.message) {
       console.error('REPORTED ERROR:', err.message)
