@@ -12,13 +12,12 @@ var debug = require('debug')('dont-break')
 var isRepoUrl = require('./is-repo-url')
 
 var _ = require('lodash')
-var q = require('q')
 
 var npmInstall = require('npm-utils').install
 var npmTest = require('npm-utils').test
 la(check.fn(npmTest), 'npm test should be a function', npmTest)
 
-var fs = require('fs')
+var fs = require('fs-extra')
 var read = fs.readFileSync
 var exists = fs.existsSync
 
@@ -50,7 +49,7 @@ function saveTopDependents (name, metric, n) {
   la(check.positiveNumber(n), 'invalid top number', n)
 
   var fetchTop = _.partial(npm.downloads, metric)
-  return q(npm.topDependents(name, n))
+  return npm.topDependents(name, n)
     .then(fetchTop)
     .then(npm.sortedByDownloads)
     .then(function (dependents) {
@@ -64,7 +63,7 @@ function saveTopDependents (name, metric, n) {
       var str = '// top ' + n + ' most dependent modules by ' + metric + ' for ' + name + '\n'
       str += '// data from NPM registry on ' + (new Date()).toDateString() + '\n'
       str += JSON.stringify(topDependents, null, 2) + '\n'
-      return q.ninvoke(fs, 'writeFile', dontBreakFilename, str, 'utf-8').then(function () {
+      return fs.writeFile(dontBreakFilename, str, 'utf-8').then(function () {
         console.log('saved top', n, 'dependents for', name, 'by', metric, 'to', dontBreakFilename)
         return topDependents
       })
@@ -72,7 +71,7 @@ function saveTopDependents (name, metric, n) {
 }
 
 function getDependentsFromFile () {
-  return q.ninvoke(fs, 'readFile', dontBreakFilename, 'utf-8')
+  return fs.readFile(dontBreakFilename, 'utf-8')
     .then(stripComments)
     .then(function (text) {
       debug('loaded dependencies file', text)
@@ -109,9 +108,11 @@ function getDependents (options, name) {
   }
   if (check.unemptyString(metric) && check.number(n)) {
     firstStep = saveTopDependents(forName, metric, n)
+  } else {
+    firstStep = Promise.resolve()
   }
 
-  return q(firstStep).then(getDependentsFromFile)
+  return firstStep.then(getDependentsFromFile)
 }
 
 function testInFolder (testCommand, folder) {
@@ -261,14 +262,17 @@ function testDependents (options, dependents) {
     return prev.then(function () {
       return testDependent(options, dependent)
     })
-  }, q(true))
+  }, Promise.resolve(true))
 }
 
 function dontBreakDependents (options, dependents) {
   la(check.arrayOfStrings(dependents), 'invalid dependents', dependents)
   debug('dependents', dependents)
+  if (check.empty(dependents)) {
+    return Promise.resolve()
+  }
 
-  dependents = _.invoke(dependents, 'trim')
+  dependents = dependents.map(s => s.trim())
   banner('  testing the following dependents\n  ' + dependents)
 
   var logSuccess = function logSuccess () {
