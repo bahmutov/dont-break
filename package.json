@@ -1,7 +1,7 @@
 {
   "name": "dont-break",
   "description": "Checks if the current version of your package would break dependent projects",
-  "version": "0.0.0-semantic-release",
+  "version": "0.0.0-development",
   "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
   "bin": {
     "dont-break": "./bin/dont-break"
@@ -50,7 +50,7 @@
     "matchdep": "1.0.1",
     "mocha": "3.4.2",
     "pre-git": "3.15.0",
-    "semantic-release": "6.3.6",
+    "semantic-release": "^6.3.6",
     "simple-commit-message": "^3.3.1",
     "standard": "10.0.2"
   },
