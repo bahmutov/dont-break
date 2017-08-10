@@ -112,7 +112,7 @@ save to `.dont-break.json` and check.
 
 The above commands overwrite `.dont-break.json` file.
 
-## Custom test command (in progress)
+## Custom test command
 
 You can specify a custom test command per dependent module. Separate the name of the module
 from the test command using `:` For example, to run `grunt test` for `foo-module-name`,
@@ -126,6 +126,23 @@ You can also specify a longer installation time out, in seconds, using CLI optio
 
 ```
 dont-break --timeout 30
+```
+
+## Custom post-install command
+
+Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the 
+dependency directory. If you need something more you can specify it via "postinstall" config parameter like this: 
+```
+[
+  {
+    "name": "packageA",
+    "postinstall": "npm run update",
+    "test": "dont-break-tests-with-my-package.sh"
+  }, {
+    "name": "packageB",
+    "test": "dont-break-tests-with-my-package.sh"
+  }
+]
 ```
 
 ## Related

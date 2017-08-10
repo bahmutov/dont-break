@@ -178,8 +178,10 @@ function getDependentVersion (pkg, name) {
 
 function testDependent (options, dependent) {
   var moduleTestCommand
+  var modulePostinstallCommand
   if (check.object(dependent)) {
     moduleTestCommand = dependent.test
+    modulePostinstallCommand = dependent.postinstall
     dependent = dependent.name
   }
   dependent = dependent.trim()
@@ -245,7 +247,7 @@ function testDependent (options, dependent) {
       console.log('installing dev dependencies', folder)
       var cwd = process.cwd()
       process.chdir(folder)
-      return install({}).then(function () {
+      return install({postinstall: modulePostinstallCommand}).then(function () {
         console.log('restoring current directory', cwd)
         process.chdir(cwd)
         return folder
