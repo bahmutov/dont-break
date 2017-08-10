@@ -25,10 +25,10 @@
   },
   "contributors": [],
   "dependencies": {
-    "chdir-promise": "0.4.0",
+    "chdir-promise": "0.4.1",
     "check-more-types": "2.24.0",
-    "commander": "2.9.0",
-    "debug": "2.6.8",
+    "commander": "2.11.0",
+    "debug": "3.0.0",
     "fs-extra": "^3.0.1",
     "ggit": "1.15.1",
     "hr": "0.1.3",
