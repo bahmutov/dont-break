@@ -127,6 +127,23 @@ You can also specify a longer installation time out, in seconds, using CLI optio
 dont-break --timeout 30
 ```
 
+## Custom post-install command
+
+Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the 
+dependency directory. If you need something more you can specify it via "postinstall" config parameter like this: 
+```
+[
+  {
+    "name": "packageA",
+    "postinstall": "npm run update",
+    "test": "dont-break-tests-with-my-package.sh"
+  }, {
+    "name": "packageB",
+    "test": "dont-break-tests-with-my-package.sh"
+  }
+]
+```
+
 ## Related
 
 *dont-break* is the opposite of [next-update](https://github.com/bahmutov/next-update)

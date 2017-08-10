@@ -10,7 +10,9 @@ var rimraf = require('rimraf')
 var chdir = require('chdir-promise')
 
 var npmInstall = require('npm-utils').install
+var postinstall = require('npm-utils').test
 la(check.fn(npmInstall), 'install should be a function', npmInstall)
+la(check.fn(postinstall), 'postinstall should be a function', postinstall)
 var cloneRepo = require('ggit').cloneRepo
 
 function removeFolder (folder) {
@@ -21,6 +23,17 @@ function removeFolder (folder) {
 }
 
 function install (options) {
+  var postInstall = function (arg) {
+    if (options.postinstall) {
+      console.log('running ' + options.postinstall + ' in %s', process.cwd())
+      return postinstall(options.postinstall).then(function () {
+        return arg
+      })
+    } else {
+      return arg
+    }
+  }
+
   if (isRepoUrl(options.name)) {
     debug('installing repo %s', options.name)
     removeFolder(options.prefix)
@@ -35,9 +48,10 @@ function install (options) {
       console.log('running NPM install in %s', process.cwd())
     })
     .then(npmInstall)
+    .then(postInstall)
     .finally(chdir.from)
   } else {
-    return q(npmInstall(options))
+    return npmInstall(options).then(postInstall)
   }
 }
 
