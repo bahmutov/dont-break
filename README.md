@@ -119,8 +119,7 @@ from the test command using `:` For example, to run `grunt test` for `foo-module
 but default command for module `bar-name`, list in `.dont-break.json` the following:
 
 ```
-foo-module-name: grunt test
-bar-name
+[{"name": "foo-module-name", "test": "grunt test"}, "bar-name"]
 ```
 
 You can also specify a longer installation time out, in seconds, using CLI option
