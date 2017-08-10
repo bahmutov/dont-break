@@ -112,10 +112,9 @@ save to `.dont-break.json` and check.
 
 The above commands overwrite `.dont-break.json` file.
 
-## Custom test command (in progress)
+## Custom test command
 
-You can specify a custom test command per dependent module. Separate the name of the module
-from the test command using `:` For example, to run `grunt test` for `foo-module-name`,
+You can specify a custom test command per dependent module. For example, to run `grunt test` for `foo-module-name`,
 but default command for module `bar-name`, list in `.dont-break.json` the following:
 
 ```
