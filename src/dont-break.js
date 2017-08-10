@@ -177,6 +177,13 @@ function getDependentVersion (pkg, name) {
 }
 
 function testDependent (options, dependent) {
+  var moduleTestCommand
+  if (check.object(dependent)) {
+    moduleTestCommand = dependent.test
+    dependent = dependent.name
+  }
+  dependent = dependent.trim()
+
   la(check.unemptyString(dependent), 'invalid dependent', dependent)
   banner('  testing', quote(dependent))
 
@@ -192,12 +199,11 @@ function testDependent (options, dependent) {
     }
   }
 
-  // TODO grab test command from dependent object
   // var nameParts = dependent.split(NAME_COMMAND_SEPARATOR)
   // la(nameParts.length, 'expected at least module name', dependent)
   // var moduleName = nameParts[0].trim()
   // var moduleTestCommand = nameParts[1] || DEFAULT_TEST_COMMAND
-  var moduleTestCommand = DEFAULT_TEST_COMMAND
+  moduleTestCommand = moduleTestCommand || DEFAULT_TEST_COMMAND
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand)
 
   var pkg = require(join(process.cwd(), 'package.json'))
@@ -266,14 +272,13 @@ function testDependents (options, dependents) {
 }
 
 function dontBreakDependents (options, dependents) {
-  la(check.arrayOfStrings(dependents), 'invalid dependents', dependents)
+  la(check.arrayOf(check.object, dependents) || check.arrayOfStrings(dependents), 'invalid dependents', dependents)
   debug('dependents', dependents)
   if (check.empty(dependents)) {
     return Promise.resolve()
   }
 
-  dependents = dependents.map(s => s.trim())
-  banner('  testing the following dependents\n  ' + dependents)
+  banner('  testing the following dependents\n  ' + JSON.stringify(dependents))
 
   var logSuccess = function logSuccess () {
     console.log('all dependents tested')
