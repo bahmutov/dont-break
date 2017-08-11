@@ -49,6 +49,7 @@
     "github-post-release": "1.13.1",
     "matchdep": "1.0.1",
     "mocha": "3.5.0",
+    "next-update-travis": "^1.7.1",
     "pre-git": "3.15.3",
     "semantic-release": "^6.3.6",
     "simple-commit-message": "^3.3.1",

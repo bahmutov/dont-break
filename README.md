@@ -8,6 +8,7 @@ Checks if the node module in the current folder breaks unit tests for specified 
 [![Build status][dont-break-ci-image] ][dont-break-ci-url]
 [![npm][dont-break-npm-image]](dont-break-npm-url)
 [![semantic-release][semantic-image] ][semantic-url]
+[![next-update-travis badge][nut-badge]][nut-readme]
 
 [dont-break-icon]: https://nodei.co/npm/dont-break.svg?downloads=true
 [dont-break-url]: https://npmjs.org/package/dont-break
@@ -17,6 +18,8 @@ Checks if the node module in the current folder breaks unit tests for specified 
 [dont-break-npm-image]: https://img.shields.io/npm/dm/dont-break.svg?maxAge=2592000
 [semantic-image]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
 [semantic-url]: https://github.com/semantic-release/semantic-release
+[nut-badge]: https://img.shields.io/badge/next--update--travis-weekly-green.svg
+[nut-readme]: https://github.com/bahmutov/next-update-travis#readme
 
 ## Install
 ```
@@ -129,8 +132,8 @@ dont-break --timeout 30
 
 ## Custom post-install command
 
-Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the 
-dependency directory. If you need something more you can specify it via "postinstall" config parameter like this: 
+Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the
+dependency directory. If you need something more you can specify it via "postinstall" config parameter like this:
 ```
 [
   {
