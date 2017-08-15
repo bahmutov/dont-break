@@ -115,22 +115,23 @@ save to `.dont-break.json` and check.
 
 The above commands overwrite `.dont-break.json` file.
 
-## Custom test command
+## Configuration options
+### Test command
 
 You can specify a custom test command per dependent module. For example, to run `grunt test` for `foo-module-name`,
 but default command for module `bar-name`, list in `.dont-break.json` the following:
 
 ```
-[{"name": "foo-module-name", "test": "grunt test"}, "bar-name"]
+[
+  {
+    "name": "foo-module-name",
+    "test": "grunt test"
+  },
+  "bar-name"
+]
 ```
 
-You can also specify a longer installation time out, in seconds, using CLI option
-
-```
-dont-break --timeout 30
-```
-
-## Custom post-install command
+### Post-install command
 
 Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the
 dependency directory. If you need something more you can specify it via "postinstall" config parameter like this:
@@ -145,6 +146,29 @@ dependency directory. If you need something more you can specify it via "postins
     "test": "dont-break-tests-with-my-package.sh"
   }
 ]
+```
+
+### Pre-testing with previous package version
+By default dont-break first tests dependent module with its published version of current module, to make sure that it 
+was working before the update. If this sounds excessive to you you can disable it with {"pretest": false} option: 
+```
+[
+  {
+    "name": "foo-module-name",
+    "test": "grunt test",
+    "pretest": false
+  },
+  "bar-name"
+]
+```
+Here "foo-module-name" module will be tested only once, and "bar-name" twise: first with its published version of 
+current module, and then with the updated version.   
+
+### Installation timeout
+You can specify a longer installation time out, in seconds, using CLI option
+
+```
+dont-break --timeout 30
 ```
 
 ## Related
