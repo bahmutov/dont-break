@@ -179,9 +179,12 @@ function getDependentVersion (pkg, name) {
 function testDependent (options, dependent) {
   var moduleTestCommand
   var modulePostinstallCommand
+  var testWithPreviousVersion = true
   if (check.object(dependent)) {
+    dependent = Object.assign({pretest: true}, dependent)
     moduleTestCommand = dependent.test
     modulePostinstallCommand = dependent.postinstall
+    testWithPreviousVersion = dependent.pretest
     dependent = dependent.name
   }
   dependent = dependent.trim()
@@ -222,7 +225,7 @@ function testDependent (options, dependent) {
     name: moduleName,
     prefix: toFolder
   }
-  return install(installOptions)
+  var res = install(installOptions)
     .timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(formFullFolderName)
     .then(function checkInstalledFolder (folder) {
@@ -257,9 +260,14 @@ function testDependent (options, dependent) {
         throw err
       })
     })
-    .then(testModuleInFolder)
-    .then(testCurrentModuleInDependent)
-    .then(testModuleInFolder)
+
+  if (testWithPreviousVersion) {
+    res = res.then(testModuleInFolder)
+  }
+
+  return res
+      .then(testCurrentModuleInDependent)
+      .then(testModuleInFolder)
 }
 
 function testDependents (options, dependents) {
