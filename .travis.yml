@@ -6,17 +6,18 @@ cache:
 notifications:
   email: false
 node_js:
+  - '4'
   - '6'
 before_script:
   - npm prune
 script:
-  - ./next-update-travis.sh
+  - $(npm bin)/if-node-version ">=6" ./next-update-travis.sh
   - npm test
   - echo Unit tests passed, running end to end tests
   - npm run e2e
 after_success:
   - npm run size
-  - npm run semantic-release
+  - TRAVIS_JOB_NUMBER=WORKAROUND.1 $(npm bin)/if-node-version ">=6" npm run semantic-release
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
