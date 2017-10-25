@@ -131,23 +131,6 @@ but default command for module `bar-name`, list in `.dont-break.json` the follow
 ]
 ```
 
-### Post-install command
-
-Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the
-dependency directory. If you need something more you can specify it via "postinstall" config parameter like this:
-```
-[
-  {
-    "name": "packageA",
-    "postinstall": "npm run update",
-    "test": "dont-break-tests-with-my-package.sh"
-  }, {
-    "name": "packageB",
-    "test": "dont-break-tests-with-my-package.sh"
-  }
-]
-```
-
 ### Pre-testing with previous package version
 By default dont-break first tests dependent module with its published version of current module, to make sure that it 
 was working before the update. If this sounds excessive to you you can disable it with {"pretest": false} option: 
@@ -164,6 +147,25 @@ was working before the update. If this sounds excessive to you you can disable i
 Here "foo-module-name" module will be tested only once, and "bar-name" twise: first with its published version of 
 current module, and then with the updated version.   
 
+### Post-install command
+
+Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the
+dependency directory. If you need something more you can specify it via "postinstall" config parameter like this:
+```
+[
+  {
+    "name": "packageA",
+    "postinstall": "npm run update",
+    "test": "dont-break-tests-with-my-package.sh"
+  }, {
+    "name": "packageB",
+    "test": "dont-break-tests-with-my-package.sh"
+  }
+]
+```
+If specified this command will run first before pretesting the old version of lib (if pretest isn't disabled), then 
+after installing current version of lib to dependent package.  
+ 
 ### Installation timeout
 You can specify a longer installation time out, in seconds, using CLI option
 

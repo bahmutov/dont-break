@@ -116,16 +116,24 @@ function getDependents (options, name) {
 }
 
 function testInFolder (testCommand, folder) {
-  la(check.unemptyString(testCommand), 'missing test command', testCommand)
+  return runInFolder(testCommand, folder, {
+    missing: 'missing test command',
+    success: 'tests work in',
+    failure: 'tests did not work in'
+  })
+}
+
+function runInFolder (testCommand, folder, messages) {
+  la(check.unemptyString(testCommand), messages.missing, testCommand)
   la(check.unemptyString(folder), 'expected folder', folder)
   var cwd = process.cwd()
   process.chdir(folder)
   return npmTest(testCommand).then(function () {
-    console.log('tests work in', folder)
+    console.log(messages.success, folder)
     return folder
   })
   .catch(function (errors) {
-    console.error('tests did not work in', folder)
+    console.error(messages.failure, folder)
     console.error('code', errors.code)
     throw errors
   })
@@ -134,7 +142,7 @@ function testInFolder (testCommand, folder) {
   })
 }
 
-function testCurrentModuleInDependent (dependentFolder) {
+function installCurrentModuleToDependent (dependentFolder) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
 
   debug('testing the current module in %s', dependentFolder)
@@ -173,6 +181,17 @@ function getDependentVersion (pkg, name) {
   }
   if (check.object(pkg.devDependencies) && pkg.devDependencies[name]) {
     return pkg.devDependencies[name]
+  }
+}
+
+function postInstallInFolder (command, folder) {
+  if (command) {
+    return runInFolder(command, folder, {
+      success: 'postinstall succeeded in',
+      failure: 'postinstall did not work in'
+    })
+  } else {
+    return folder
   }
 }
 
@@ -225,6 +244,9 @@ function testDependent (options, dependent) {
     name: moduleName,
     prefix: toFolder
   }
+
+  var postInstallModuleInFolder = _.partial(postInstallInFolder, modulePostinstallCommand)
+
   var res = install(installOptions)
     .timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(formFullFolderName)
@@ -250,7 +272,7 @@ function testDependent (options, dependent) {
       console.log('installing dev dependencies', folder)
       var cwd = process.cwd()
       process.chdir(folder)
-      return install({postinstall: modulePostinstallCommand}).then(function () {
+      return install({}).then(function () {
         console.log('restoring current directory', cwd)
         process.chdir(cwd)
         return folder
@@ -262,12 +284,15 @@ function testDependent (options, dependent) {
     })
 
   if (testWithPreviousVersion) {
-    res = res.then(testModuleInFolder)
+    res = res
+      .then(postInstallModuleInFolder)
+      .then(testModuleInFolder)
   }
 
   return res
-      .then(testCurrentModuleInDependent)
-      .then(testModuleInFolder)
+    .then(installCurrentModuleToDependent)
+    .then(postInstallModuleInFolder)
+    .then(testModuleInFolder)
 }
 
 function testDependents (options, dependents) {
