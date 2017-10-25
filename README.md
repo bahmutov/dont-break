@@ -140,12 +140,23 @@ was working before the update. If this sounds excessive to you you can disable i
     "name": "foo-module-name",
     "test": "grunt test",
     "pretest": false
-  },
-  "bar-name"
+  }
 ]
 ```
 Here "foo-module-name" module will be tested only once, and "bar-name" twise: first with its published version of 
 current module, and then with the updated version.   
+
+The "pretest" property can also accept custom script to run for pretesting:
+```
+[
+  {
+    "name": "foo-module-name",
+    "test": "grunt test",
+    "pretest": "grunt test && ./ci/after-pretesting-by-dont-break"
+  }
+]
+```
+By default it equals to "test" command.
 
 ### Post-install command
 

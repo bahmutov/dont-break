@@ -284,9 +284,16 @@ function testDependent (options, dependent) {
     })
 
   if (testWithPreviousVersion) {
+    var modulePretestCommand
+    if (check.type('string', testWithPreviousVersion)) {
+      modulePretestCommand = testWithPreviousVersion
+    } else {
+      modulePretestCommand = moduleTestCommand
+    }
+    var pretestModuleInFolder = _.partial(testInFolder, modulePretestCommand)
     res = res
       .then(postInstallModuleInFolder)
-      .then(testModuleInFolder)
+      .then(pretestModuleInFolder)
   }
 
   return res
