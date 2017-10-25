@@ -259,12 +259,12 @@ function testDependent (options, dependent) {
       var installedPackage = readJSON(join(folder, 'package.json'))
       var moduleVersion = installedPackage.version
       var currentVersion = getDependentVersion(installedPackage, pkg.name)
-      la(check.unemptyString(currentVersion),
-        'could not find dependency on', pkg.name,
-        'in module', installedPackage.name)
+      var usageMessage = currentVersion
+        ? '\ncurrently uses ' + pkg.name + '@' + currentVersion
+        : '\ncurrently not (directly) using ' + pkg.name
       banner('installed', moduleName + '@' + moduleVersion,
         '\ninto', folder,
-        '\ncurrently uses', pkg.name + '@' + currentVersion,
+        usageMessage,
         '\nwill test', pkg.name + '@' + pkg.version)
       return folder
     })
