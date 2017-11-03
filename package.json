@@ -25,7 +25,7 @@
   },
   "contributors": [],
   "dependencies": {
-    "chdir-promise": "0.4.1",
+    "chdir-promise": "0.6.2",
     "check-more-types": "2.24.0",
     "commander": "2.11.0",
     "debug": "3.1.0",
@@ -51,7 +51,7 @@
     "matchdep": "1.0.1",
     "mocha": "3.5.3",
     "next-update-travis": "^1.7.1",
-    "pre-git": "3.15.3",
+    "pre-git": "3.16.0",
     "semantic-release": "^6.3.6",
     "simple-commit-message": "3.3.2",
     "standard": "10.0.3"
