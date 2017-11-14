@@ -1,0 +1,10 @@
+{
+  "test": "node index.js",
+  "projects": [
+    {
+      "name": "https://github.com/bahmutov/dont-break-bar",
+      "pretest": false,
+      "postinstall": "rm package.json"
+    }
+  ]
+}

@@ -195,12 +195,12 @@ function postInstallInFolder (command, folder) {
   }
 }
 
-function testDependent (options, dependent) {
+function testDependent (options, dependent, config) {
   var moduleTestCommand
   var modulePostinstallCommand
   var testWithPreviousVersion = true
   if (check.object(dependent)) {
-    dependent = Object.assign({pretest: true}, dependent)
+    dependent = Object.assign({pretest: true}, config, dependent)
     moduleTestCommand = dependent.test
     modulePostinstallCommand = dependent.postinstall
     testWithPreviousVersion = dependent.pretest
@@ -302,19 +302,24 @@ function testDependent (options, dependent) {
     .then(testModuleInFolder)
 }
 
-function testDependents (options, dependents) {
-  la(check.array(dependents), 'expected dependents', dependents)
+function testDependents (options, config) {
+  la(check.array(config.projects), 'expected dependents', config.projects)
 
   // TODO switch to parallel testing!
-  return dependents.reduce(function (prev, dependent) {
+  return config.projects.reduce(function (prev, dependent) {
     return prev.then(function () {
-      return testDependent(options, dependent)
+      return testDependent(options, dependent, config)
     })
   }, Promise.resolve(true))
 }
 
 function dontBreakDependents (options, dependents) {
-  la(check.arrayOf(check.object, dependents) || check.arrayOfStrings(dependents), 'invalid dependents', dependents)
+  if (check.arrayOf(check.object, dependents) || check.arrayOfStrings(dependents)) {
+    dependents = {
+      projects: dependents
+    }
+  }
+  la(check.arrayOf(check.object, dependents.projects) || check.arrayOfStrings(dependents.projects), 'invalid dependents', dependents.projects)
   debug('dependents', dependents)
   if (check.empty(dependents)) {
     return Promise.resolve()
