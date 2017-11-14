@@ -148,6 +148,13 @@ function runInFolder (folder, testCommand, messages) {
   })
 }
 
+var linkCurrentModule = _.memoize(function (thisFolder) {
+  return runInFolder(thisFolder, 'npm link', {
+    success: 'linking current module succeeded',
+    failure: 'linking current module failed'
+  })
+})
+
 function installCurrentModuleToDependent (dependentFolder, currentModuleInstallMethod) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
 
@@ -161,10 +168,7 @@ function installCurrentModuleToDependent (dependentFolder, currentModuleInstallM
 
   if (currentModuleInstallMethod === 'npm-link') {
     var pkgName = currentPackageName()
-    return runInFolder(thisFolder, 'npm link', {
-      success: 'linking current module succeeded',
-      failure: 'linking current module failed'
-    })
+    return linkCurrentModule(thisFolder)
       .then(function () {
         return runInFolder(dependentFolder, `npm link ${pkgName}`, {
           success: `linked ${pkgName}`,
