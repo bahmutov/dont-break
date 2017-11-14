@@ -1,3 +1,7 @@
+#!/bin/bash
+
+set -e
+
 echo "Testing dont-break"
 
 npm link
