@@ -87,12 +87,10 @@ function getDependentsFromFile () {
     })
 }
 
-function _currentPackageName () {
+var currentPackageName = _.memoize(function () {
   var pkg = require(join(process.cwd(), 'package.json'))
   return pkg.name
-}
-
-var currentPackageName = _.memoize(_currentPackageName)
+})
 
 function getDependents (options, name) {
   options = options || {}
