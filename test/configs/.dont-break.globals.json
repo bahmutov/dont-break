@@ -1,6 +1,7 @@
 {
   "test": "error",
   "pretest": false,
+  "currentModuleInstall": "npm-link",
   "projects": [
     {
       "name": "https://github.com/bahmutov/dont-break-bar",
