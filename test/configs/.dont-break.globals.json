@@ -1,10 +1,11 @@
 {
-  "test": "node index.js",
+  "test": "error",
+  "pretest": false,
   "projects": [
     {
       "name": "https://github.com/bahmutov/dont-break-bar",
-      "pretest": false,
-      "postinstall": "rm package.json"
+      "postinstall": "rm package.json",
+      "test": "node index.js"
     }
   ]
 }
