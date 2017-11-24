@@ -27,7 +27,7 @@
   "dependencies": {
     "chdir-promise": "0.6.2",
     "check-more-types": "2.24.0",
-    "commander": "2.11.0",
+    "commander": "2.12.1",
     "debug": "3.1.0",
     "fs-extra": "^3.0.1",
     "ggit": "2.4.0",
