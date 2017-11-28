@@ -116,6 +116,43 @@ save to `.dont-break.json` and check.
 The above commands overwrite `.dont-break.json` file.
 
 ## Configuration options
+
+### Global vs. project-level configuration
+You can specify different configuration options on global level or on project level. Following configs are equivalent.
+Project level:
+```
+[
+  {
+    "name": "project-a",
+    "test": "grunt test"
+  },
+  {
+    "name": "project-b",
+    "test": "grunt test"
+  },
+  {
+    "name": "project-c",
+    "test": "npm test:special"
+  }
+]
+```
+Global level:
+```
+{
+  "test": "grunt test",
+  "projects": [
+    "project-a", 
+    "project-b", 
+    {
+      "name": "project-c",
+      "test": "npm test:special"
+    }
+  ]
+}
+```
+Global level will simplify dont-break config if dependent projects share the same options. Also, options can be 
+overriden on project level as in case of "project-c" here.
+  
 ### Test command
 
 You can specify a custom test command per dependent module. For example, to run `grunt test` for `foo-module-name`,
