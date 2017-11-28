@@ -22,4 +22,6 @@ npm install --prod
 npm run dont-break
 cp -f $BASEDIR/test/configs/.dont-break.globals.json ./.dont-break.json
 npm run dont-break
+cp -f $BASEDIR/test/configs/.dont-break.npm-link.json ./.dont-break.json
+npm run dont-break
 echo "dont-break is working"

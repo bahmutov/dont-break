@@ -195,6 +195,20 @@ The "pretest" property can also accept custom script to run for pretesting:
 ```
 By default it equals to "test" command.
 
+### Current module installation method
+
+To test dependent package dont-break installs current module inside the dependent package directory. By default it uses
+`cd $DEPENDENT_PACKAGE_DIR && npm install $CURRENT_MODULE_DIR`. Other option is using [npm-link](https://docs.npmjs.com/cli/link) 
+for current module - this can be helpful in some cases, e.g. if you need to use `npm install` in postinstall command. 
+To use `npm link` method specify {"currentModuleInstall": "npm-link"}: 
+```
+{
+  "currentModuleInstall": "npm-link",
+  "projects": ["packageA", "packageB"]
+}
+```
+Default value is {"currentModuleInstall": "npm-install"}. 
+
 ### Post-install command
 
 Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the

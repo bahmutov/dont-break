@@ -87,13 +87,17 @@ function getDependentsFromFile () {
     })
 }
 
+var currentPackageName = _.memoize(function () {
+  var pkg = require(join(process.cwd(), 'package.json'))
+  return pkg.name
+})
+
 function getDependents (options, name) {
   options = options || {}
   var forName = name
 
   if (!name) {
-    var pkg = require(join(process.cwd(), 'package.json'))
-    forName = pkg.name
+    forName = currentPackageName()
   }
 
   var firstStep
@@ -116,24 +120,24 @@ function getDependents (options, name) {
 }
 
 function testInFolder (testCommand, folder) {
-  return runInFolder(testCommand, folder, {
+  return runInFolder(folder, testCommand, {
     missing: 'missing test command',
-    success: 'tests work in',
-    failure: 'tests did not work in'
+    success: 'tests work',
+    failure: 'tests did not work'
   })
 }
 
-function runInFolder (testCommand, folder, messages) {
+function runInFolder (folder, testCommand, messages) {
   la(check.unemptyString(testCommand), messages.missing, testCommand)
   la(check.unemptyString(folder), 'expected folder', folder)
   var cwd = process.cwd()
   process.chdir(folder)
   return npmTest(testCommand).then(function () {
-    console.log(messages.success, folder)
+    console.log(`${messages.success} in ${folder}`)
     return folder
   })
   .catch(function (errors) {
-    console.error(messages.failure, folder)
+    console.error(`${messages.failure} in ${folder}`)
     console.error('code', errors.code)
     throw errors
   })
@@ -142,7 +146,14 @@ function runInFolder (testCommand, folder, messages) {
   })
 }
 
-function installCurrentModuleToDependent (dependentFolder) {
+var linkCurrentModule = _.memoize(function (thisFolder) {
+  return runInFolder(thisFolder, 'npm link', {
+    success: 'linking current module succeeded',
+    failure: 'linking current module failed'
+  })
+})
+
+function installCurrentModuleToDependent (dependentFolder, currentModuleInstallMethod) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
 
   debug('testing the current module in %s', dependentFolder)
@@ -153,15 +164,30 @@ function installCurrentModuleToDependent (dependentFolder) {
     name: thisFolder
   }
 
-  return chdir.to(dependentFolder)
-    .then(function () { return npmInstall(options) })
-    .then(function () {
-      console.log('Installed\n %s\n in %s', thisFolder, dependentFolder)
-    })
-    .finally(chdir.from)
-    .then(function () {
-      return dependentFolder
-    })
+  if (currentModuleInstallMethod === 'npm-link') {
+    var pkgName = currentPackageName()
+    return linkCurrentModule(thisFolder)
+      .then(function () {
+        return runInFolder(dependentFolder, `npm link ${pkgName}`, {
+          success: `linked ${pkgName}`,
+          failure: `linking ${pkgName} failed`
+        })
+      })
+      .finally(chdir.from)
+      .then(function () {
+        return dependentFolder
+      })
+  } else {
+    return chdir.to(dependentFolder)
+      .then(function () { return npmInstall(options) })
+      .then(function () {
+        console.log('Installed\n %s\n in %s', thisFolder, dependentFolder)
+      })
+      .finally(chdir.from)
+      .then(function () {
+        return dependentFolder
+      })
+  }
 }
 
 function getDependencyName (dependent) {
@@ -186,9 +212,9 @@ function getDependentVersion (pkg, name) {
 
 function postInstallInFolder (command, folder) {
   if (command) {
-    return runInFolder(command, folder, {
-      success: 'postinstall succeeded in',
-      failure: 'postinstall did not work in'
+    return runInFolder(folder, command, {
+      success: 'postinstall succeeded',
+      failure: 'postinstall did not work'
     })
   } else {
     return folder
@@ -198,15 +224,18 @@ function postInstallInFolder (command, folder) {
 function testDependent (options, dependent, config) {
   var moduleTestCommand
   var modulePostinstallCommand
-  var testWithPreviousVersion = true
-  if (check.object(dependent)) {
-    dependent = Object.assign({pretest: true}, config, dependent)
-    moduleTestCommand = dependent.test
-    modulePostinstallCommand = dependent.postinstall
-    testWithPreviousVersion = dependent.pretest
-    dependent = dependent.name
+  var testWithPreviousVersion
+  var currentModuleInstallMethod
+  if (check.string(dependent)) {
+    dependent = {name: dependent.trim()}
   }
-  dependent = dependent.trim()
+
+  dependent = Object.assign({pretest: true, currentModuleInstall: 'npm-install'}, config, dependent)
+  moduleTestCommand = dependent.test
+  modulePostinstallCommand = dependent.postinstall
+  testWithPreviousVersion = dependent.pretest
+  currentModuleInstallMethod = dependent.currentModuleInstall
+  dependent = dependent.name
 
   la(check.unemptyString(dependent), 'invalid dependent', dependent)
   banner('  testing', quote(dependent))
@@ -297,7 +326,7 @@ function testDependent (options, dependent, config) {
   }
 
   return res
-    .then(installCurrentModuleToDependent)
+    .then(function (folder) { return installCurrentModuleToDependent(folder, currentModuleInstallMethod) })
     .then(postInstallModuleInFolder)
     .then(testModuleInFolder)
 }
