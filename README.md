@@ -168,6 +168,21 @@ but default command for module `bar-name`, list in `.dont-break.json` the follow
 ]
 ```
 
+### Install command
+
+You can specify a custom install command per dependent module. For example, to run `yarn` for `foo-module-name`,
+but default `npm install` for module `bar-name`, list in `.dont-break.json` the following:
+
+```
+[
+  {
+    "name": "foo-module-name",
+    "install": "yarn"
+  },
+  "bar-name"
+]
+```
+
 ### Pre-testing with previous package version
 By default dont-break first tests dependent module with its published version of current module, to make sure that it 
 was working before the update. If this sounds excessive to you you can disable it with {"pretest": false} option: 

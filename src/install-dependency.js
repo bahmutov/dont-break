@@ -12,6 +12,7 @@ var chdir = require('chdir-promise')
 var npmInstall = require('npm-utils').install
 la(check.fn(npmInstall), 'install should be a function', npmInstall)
 var cloneRepo = require('ggit').cloneRepo
+var runInFolder = require('./run-in-folder')
 
 function removeFolder (folder) {
   if (exists(folder)) {
@@ -36,7 +37,16 @@ function install (options) {
     })
     .finally(chdir.from)
   } else {
-    return npmInstall(options)
+    if (options.install) {
+      var install = options.install + ' ' + options.name
+      console.log('running "%s" install command in %s', install, options.prefix)
+      return runInFolder(options.prefix, install, {
+        success: 'installing dependent module succeeded',
+        failure: 'installing dependent module failed'
+      })
+    } else {
+      return npmInstall(options)
+    }
   }
 }
 

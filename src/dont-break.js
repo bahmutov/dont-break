@@ -30,6 +30,7 @@ var DEFAULT_TEST_COMMAND = 'npm test'
 var INSTALL_TIMEOUT_SECONDS = 3 * 60
 
 var install = require('./install-dependency')
+var runInFolder = require('./run-in-folder')
 
 function readJSON (filename) {
   la(exists(filename), 'cannot find JSON file to load', filename)
@@ -127,25 +128,6 @@ function testInFolder (testCommand, folder) {
   })
 }
 
-function runInFolder (folder, testCommand, messages) {
-  la(check.unemptyString(testCommand), messages.missing, testCommand)
-  la(check.unemptyString(folder), 'expected folder', folder)
-  var cwd = process.cwd()
-  process.chdir(folder)
-  return npmTest(testCommand).then(function () {
-    console.log(`${messages.success} in ${folder}`)
-    return folder
-  })
-  .catch(function (errors) {
-    console.error(`${messages.failure} in ${folder}`)
-    console.error('code', errors.code)
-    throw errors
-  })
-  .finally(function () {
-    process.chdir(cwd)
-  })
-}
-
 var linkCurrentModule = _.memoize(function (thisFolder) {
   return runInFolder(thisFolder, 'npm link', {
     success: 'linking current module succeeded',
@@ -235,6 +217,7 @@ function testDependent (options, dependent, config) {
   modulePostinstallCommand = dependent.postinstall
   testWithPreviousVersion = dependent.pretest
   currentModuleInstallMethod = dependent.currentModuleInstall
+  var dependentInstall = dependent.install
   dependent = dependent.name
 
   la(check.unemptyString(dependent), 'invalid dependent', dependent)
@@ -248,7 +231,11 @@ function testDependent (options, dependent, config) {
       return toFolder
     } else {
       // it was NPM install
-      return join(toFolder, 'lib', 'node_modules', moduleName)
+      var parts = [toFolder]
+      if (!dependentInstall) {
+        parts.push('lib')
+      }
+      return join.apply(null, parts.concat(['node_modules', moduleName]))
     }
   }
 
@@ -271,7 +258,8 @@ function testDependent (options, dependent, config) {
 
   var installOptions = {
     name: moduleName,
-    prefix: toFolder
+    prefix: toFolder,
+    install: dependentInstall
   }
 
   var postInstallModuleInFolder = _.partial(postInstallInFolder, modulePostinstallCommand)

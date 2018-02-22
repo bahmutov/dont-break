@@ -1,0 +1,5 @@
+{
+  "pretest": false,
+  "install": "npm install",
+  "projects": ["https://github.com/bahmutov/dont-break-bar"]
+}
