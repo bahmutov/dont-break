@@ -153,6 +153,16 @@ Global level:
 Global level will simplify dont-break config if dependent projects share the same options. Also, options can be 
 overriden on project level as in case of "project-c" here.
   
+### Execution flow overview
+Dont-break performs folowing steps for each dependent project:
+* [Install](#install-command) the dependent project
+* [Pre-test](#pre-testing-with-previous-package-version) it if this is not disabled
+* [Install current module](#current-module-installation-method) into the dependent project
+* Run [post-install](#post-install-command) command if needed
+* [Test](#test-command) the dependent project
+
+Sections below describe how you can customize these steps.
+
 ### Test command
 
 You can specify a custom test command per dependent module. For example, to run `grunt test` for `foo-module-name`,
@@ -170,9 +180,8 @@ but default command for module `bar-name`, list in `.dont-break.json` the follow
 
 ### Install command
 
-You can specify a custom install command per dependent module. For example, to run `yarn` for `foo-module-name`,
-but default `npm install` for module `bar-name`, list in `.dont-break.json` the following:
-
+You can specify a custom install command per dependent module. By default it's `npm install`. For example, this will run
+`yarn` for `foo-module-name`, but keep default `npm install` for module `bar-name`:
 ```
 [
   {
