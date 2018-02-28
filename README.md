@@ -209,13 +209,13 @@ dependency directory. If you need something more you can specify it via "postins
 ]
 ```
 If specified this command will run first before pretesting the old version of lib (if pretest isn't disabled), then 
-after installing current version of lib to dependent package. You can use {{CURRENT_MODULE_DIR}} variable here which 
+after installing current version of lib to dependent package. You can use $CURRENT_MODULE_DIR variable here which 
 will be replaced with a path to current module: 
 ```
 [
   {
     "name": "packageA",
-    "postinstall": "{{CURRENT_MODULE_DIR}}/install-all-deps.sh",
+    "postinstall": "$CURRENT_MODULE_DIR/install-all-deps.sh",
   }
 ]
 ```
@@ -260,7 +260,12 @@ specify {"currentModuleInstall": "npm-link"}:
   "projects": ["packageA", "packageB"]
 }
 ```
-Default value is {"currentModuleInstall": "npm-install"}. 
+Default value is {"currentModuleInstall": "npm-install"}.
+
+### Env vars exported to called scripts
+Following env vars are available for use in scripts called by executed steps: 
+* `$CURRENT_MODULE_DIR` - directory of current module  
+* `$CURRENT_MODULE_NAME` - name of current module as stated in its package.json
  
 ### Installation timeout
 You can specify a longer installation time out, in seconds, using CLI option

@@ -184,7 +184,7 @@ function getDependentVersion (pkg, name) {
 
 function postInstallInFolder (dependentFolder, command, sourceFolder) {
   if (command) {
-    command = command.replace('{{CURRENT_MODULE_DIR}}', sourceFolder)
+    command = command.replace('$CURRENT_MODULE_DIR', sourceFolder)
     return runInFolder(dependentFolder, command, {
       success: 'postinstall succeeded',
       failure: 'postinstall did not work'
@@ -235,6 +235,9 @@ function testDependent (options, dependent, config) {
 
   var cwd = process.cwd()
   var pkg = require(join(cwd, 'package.json'))
+  process.env.CURRENT_MODULE_NAME = pkg.name
+  process.env.CURRENT_MODULE_DIR = cwd
+
   var depName = pkg.name + '-v' + pkg.version + '-against-' + moduleName
   var safeName = _.kebabCase(_.deburr(depName))
   debug('original name "%s", safe "%s"', depName, safeName)
