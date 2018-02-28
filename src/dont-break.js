@@ -140,7 +140,12 @@ function installCurrentModuleToDependent (sourceFolder, dependentFolder, current
   debug('testing the current module in %s', dependentFolder)
   debug('current module folder %s', sourceFolder)
 
-  if (_.indexOf(['npm-link', 'yarn-link'], currentModuleInstallMethod) >= 0) {
+  if (currentModuleInstallMethod === 'npm-install') {
+    return install({ prefix: dependentFolder, name: sourceFolder })
+      .then(function () {
+        return dependentFolder
+      })
+  } else {
     var pkgName = currentPackageName()
     var linkCmd = currentModuleInstallMethod.replace('-', ' ')
     return linkCurrentModule(sourceFolder, linkCmd)
@@ -151,11 +156,6 @@ function installCurrentModuleToDependent (sourceFolder, dependentFolder, current
         })
       })
       .finally(chdir.from)
-      .then(function () {
-        return dependentFolder
-      })
-  } else {
-    return install({ prefix: dependentFolder, name: sourceFolder })
       .then(function () {
         return dependentFolder
       })

@@ -156,8 +156,8 @@ overriden on project level as in case of "project-c" here.
 ### Execution flow overview
 Dont-break performs folowing steps for each dependent project:
 * Install the dependent project into temporary dir using the [specified command](#install-command)
-* Run [post-install](#post-install-command) command
-* [Pre-test](#pre-testing-with-previous-package-version) it if this is not disabled
+* Run [post-install](#post-install-command) command if [pre-test](#pre-testing-with-previous-package-version) is not disabled
+* [Pre-test](#pre-testing-with-previous-package-version) the dependent project if this is not disabled
 * [Install current module](#current-module-installation-method) into the dependent project
 * Run [post-install](#post-install-command) command
 * [Test](#test-command) the dependent project
