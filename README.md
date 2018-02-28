@@ -153,6 +153,17 @@ Global level:
 Global level will simplify dont-break config if dependent projects share the same options. Also, options can be 
 overriden on project level as in case of "project-c" here.
   
+### Execution flow overview
+Dont-break performs folowing steps for each dependent project:
+* Install the dependent project into temporary dir using the [specified command](#install-command)
+* Install the dependent project's dependencies using the [specified command](#install-command)
+* [Pre-test](#pre-testing-with-previous-package-version) it if this is not disabled
+* [Install current module](#current-module-installation-method) into the dependent project
+* Run [post-install](#post-install-command) command if needed
+* [Test](#test-command) the dependent project
+
+Sections below describe how you can customize these steps.
+
 ### Test command
 
 You can specify a custom test command per dependent module. For example, to run `grunt test` for `foo-module-name`,
@@ -170,9 +181,8 @@ but default command for module `bar-name`, list in `.dont-break.json` the follow
 
 ### Install command
 
-You can specify a custom install command per dependent module. For example, to run `yarn` for `foo-module-name`,
-but default `npm install` for module `bar-name`, list in `.dont-break.json` the following:
-
+You can specify a custom install command per dependent module. By default it's `npm install`. For example, this will use
+`yarn` for `foo-module-name`, but keep default `npm install` for module `bar-name`:
 ```
 [
   {
@@ -182,6 +192,20 @@ but default `npm install` for module `bar-name`, list in `.dont-break.json` the 
   "bar-name"
 ]
 ```
+This command is used in 2 steps: first, when dependent project is installed to temporary dir 
+(e.g. `yarn add my-module`), and second, when dependent project's dependencies are installed (e.g. `yarn`). If you use 
+smth else than yarn or npm, customize the 'add' part of `yarn add my-module` version with "installAddWord" option like 
+this:
+```
+[
+  {
+    "name": "foo-module-name",
+    "install": "npm-install-retry --wait 500 --attempts 10",
+    "installAddWord": "--"
+  }
+]
+```
+This will result in `npm-install-retry --wait 500 --attempts 10 -- my-module` for first step.
 
 ### Pre-testing with previous package version
 By default dont-break first tests dependent module with its published version of current module, to make sure that it 
@@ -213,9 +237,10 @@ By default it equals to "test" command.
 ### Current module installation method
 
 To test dependent package dont-break installs current module inside the dependent package directory. By default it uses
-`cd $DEPENDENT_PACKAGE_DIR && npm install $CURRENT_MODULE_DIR`. Other option is using [npm-link](https://docs.npmjs.com/cli/link) 
-for current module - this can be helpful in some cases, e.g. if you need to use `npm install` in postinstall command. 
-To use `npm link` method specify {"currentModuleInstall": "npm-link"}: 
+`cd $DEPENDENT_PACKAGE_DIR && npm install $CURRENT_MODULE_DIR`. Other options are 
+[npm-link](https://docs.npmjs.com/cli/link) and [yarn-link](https://yarnpkg.com/lang/en/docs/cli/link/). They can be 
+helpful in some cases, e.g. if you need to use `npm install` or `yarn` in postinstall command. To use `npm link` method 
+specify {"currentModuleInstall": "npm-link"}: 
 ```
 {
   "currentModuleInstall": "npm-link",
