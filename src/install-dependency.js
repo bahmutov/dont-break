@@ -1,18 +1,15 @@
 'use strict'
 
 var q = require('q')
-var la = require('lazy-ass')
-var check = require('check-more-types')
 var isRepoUrl = require('./is-repo-url')
 var debug = require('debug')('dont-break')
 var exists = require('fs').existsSync
 var rimraf = require('rimraf')
 var chdir = require('chdir-promise')
 
-var npmInstall = require('npm-utils').install
-la(check.fn(npmInstall), 'install should be a function', npmInstall)
 var cloneRepo = require('ggit').cloneRepo
 var runInFolder = require('./run-in-folder')
+var mkdirp = require('mkdirp')
 
 function removeFolder (folder) {
   if (exists(folder)) {
@@ -35,18 +32,25 @@ function install (options) {
     .then(function () {
       console.log('running NPM install in %s', process.cwd())
     })
+    .catch(function (err) {
+      console.error('smth went wrong', err)
+      throw err
+    })
     .finally(chdir.from)
   } else {
-    if (options.install) {
-      var install = options.install + ' ' + options.name
-      console.log('running "%s" install command in %s', install, options.prefix)
-      return runInFolder(options.prefix, install, {
-        success: 'installing dependent module succeeded',
-        failure: 'installing dependent module failed'
-      })
-    } else {
-      return npmInstall(options)
+    if (!exists(options.prefix)) {
+      mkdirp.sync(options.prefix)
     }
+    var cmd = options.cmd || 'npm install'
+    options.installAddWord = options.installAddWord || ''
+    if (options.name) {
+      cmd = `${cmd} ${options.installAddWord} ${options.name}`
+    }
+    console.log('running "%s" install command in %s', cmd, options.prefix)
+    return runInFolder(options.prefix, cmd, {
+      success: 'installing dependent module succeeded',
+      failure: 'installing dependent module failed'
+    })
   }
 }
 

@@ -13,7 +13,6 @@ var isRepoUrl = require('./is-repo-url')
 
 var _ = require('lodash')
 
-var npmInstall = require('npm-utils').install
 var npmTest = require('npm-utils').test
 la(check.fn(npmTest), 'npm test should be a function', npmTest)
 
@@ -128,29 +127,25 @@ function testInFolder (testCommand, folder) {
   })
 }
 
-var linkCurrentModule = _.memoize(function (thisFolder) {
-  return runInFolder(thisFolder, 'npm link', {
+var linkCurrentModule = _.memoize(function (thisFolder, linkCmd) {
+  return runInFolder(thisFolder, linkCmd, {
     success: 'linking current module succeeded',
     failure: 'linking current module failed'
   })
 })
 
-function installCurrentModuleToDependent (dependentFolder, currentModuleInstallMethod) {
+function installCurrentModuleToDependent (sourceFolder, dependentFolder, currentModuleInstallMethod) {
   la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
 
   debug('testing the current module in %s', dependentFolder)
-  var thisFolder = process.cwd()
-  debug('current module folder %s', thisFolder)
+  debug('current module folder %s', sourceFolder)
 
-  var options = {
-    name: thisFolder
-  }
-
-  if (currentModuleInstallMethod === 'npm-link') {
+  if (['npm-link', 'yarn-link'].includes(currentModuleInstallMethod)) {
     var pkgName = currentPackageName()
-    return linkCurrentModule(thisFolder)
+    var linkCmd = currentModuleInstallMethod.replace('-', ' ')
+    return linkCurrentModule(sourceFolder, linkCmd)
       .then(function () {
-        return runInFolder(dependentFolder, `npm link ${pkgName}`, {
+        return runInFolder(dependentFolder, `${linkCmd} ${pkgName}`, {
           success: `linked ${pkgName}`,
           failure: `linking ${pkgName} failed`
         })
@@ -160,12 +155,7 @@ function installCurrentModuleToDependent (dependentFolder, currentModuleInstallM
         return dependentFolder
       })
   } else {
-    return chdir.to(dependentFolder)
-      .then(function () { return npmInstall(options) })
-      .then(function () {
-        console.log('Installed\n %s\n in %s', thisFolder, dependentFolder)
-      })
-      .finally(chdir.from)
+    return install({ prefix: dependentFolder, name: sourceFolder })
       .then(function () {
         return dependentFolder
       })
@@ -218,6 +208,12 @@ function testDependent (options, dependent, config) {
   testWithPreviousVersion = dependent.pretest
   currentModuleInstallMethod = dependent.currentModuleInstall
   var dependentInstall = dependent.install
+  var installAddWord = dependent.installAddWord
+  if (dependentInstall === 'yarn') {
+    installAddWord = installAddWord || 'add'
+  }
+  installAddWord = installAddWord || ''
+
   dependent = dependent.name
 
   la(check.unemptyString(dependent), 'invalid dependent', dependent)
@@ -259,11 +255,13 @@ function testDependent (options, dependent, config) {
   var installOptions = {
     name: moduleName,
     prefix: toFolder,
-    install: dependentInstall
+    cmd: dependentInstall,
+    installAddWord: installAddWord
   }
 
   var postInstallModuleInFolder = _.partial(postInstallInFolder, modulePostinstallCommand)
 
+  var cwd = process.cwd()
   var res = install(installOptions)
     .timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(formFullFolderName)
@@ -287,11 +285,7 @@ function testDependent (options, dependent, config) {
     })
     .then(function installDependencies (folder) {
       console.log('installing dev dependencies', folder)
-      var cwd = process.cwd()
-      process.chdir(folder)
-      return install({}).then(function () {
-        console.log('restoring current directory', cwd)
-        process.chdir(cwd)
+      return install({cmd: installOptions.cmd, prefix: folder}).then(function () {
         return folder
       }, function (err) {
         console.error('Could not install dependencies in', folder)
@@ -314,9 +308,13 @@ function testDependent (options, dependent, config) {
   }
 
   return res
-    .then(function (folder) { return installCurrentModuleToDependent(folder, currentModuleInstallMethod) })
+    .then(function (folder) { return installCurrentModuleToDependent(cwd, folder, currentModuleInstallMethod) })
     .then(postInstallModuleInFolder)
     .then(testModuleInFolder)
+    .finally(function () {
+      console.log('restoring original directory', cwd)
+      process.chdir(cwd)
+    })
 }
 
 function testDependents (options, config) {
