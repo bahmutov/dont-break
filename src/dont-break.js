@@ -140,7 +140,7 @@ function installCurrentModuleToDependent (sourceFolder, dependentFolder, current
   debug('testing the current module in %s', dependentFolder)
   debug('current module folder %s', sourceFolder)
 
-  if (['npm-link', 'yarn-link'].includes(currentModuleInstallMethod)) {
+  if (_.indexOf(['npm-link', 'yarn-link'], currentModuleInstallMethod) >= 0) {
     var pkgName = currentPackageName()
     var linkCmd = currentModuleInstallMethod.replace('-', ' ')
     return linkCurrentModule(sourceFolder, linkCmd)
