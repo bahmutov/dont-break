@@ -156,10 +156,10 @@ overriden on project level as in case of "project-c" here.
 ### Execution flow overview
 Dont-break performs folowing steps for each dependent project:
 * Install the dependent project into temporary dir using the [specified command](#install-command)
-* Install the dependent project's dependencies using the [specified command](#install-command)
+* Run [post-install](#post-install-command) command
 * [Pre-test](#pre-testing-with-previous-package-version) it if this is not disabled
 * [Install current module](#current-module-installation-method) into the dependent project
-* Run [post-install](#post-install-command) command if needed
+* Run [post-install](#post-install-command) command
 * [Test](#test-command) the dependent project
 
 Sections below describe how you can customize these steps.
@@ -182,30 +182,43 @@ but default command for module `bar-name`, list in `.dont-break.json` the follow
 ### Install command
 
 You can specify a custom install command per dependent module. By default it's `npm install`. For example, this will use
-`yarn` for `foo-module-name`, but keep default `npm install` for module `bar-name`:
+`yarn add` for `foo-module-name`, but keep default `npm install` for module `bar-name`:
 ```
 [
   {
     "name": "foo-module-name",
-    "install": "yarn"
+    "install": "yarn add"
   },
   "bar-name"
 ]
 ```
-This command is used in 2 steps: first, when dependent project is installed to temporary dir 
-(e.g. `yarn add my-module`), and second, when dependent project's dependencies are installed (e.g. `yarn`). If you use 
-smth else than yarn or npm, customize the 'add' part of `yarn add my-module` version with "installAddWord" option like 
-this:
+The name of dependent module will be added to given command, e.g. for above it will run `yarn add foo-module-name`. 
+
+### Post-install command
+
+Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the
+dependency directory. If you need something more you can specify it via "postinstall" config parameter like this:
 ```
 [
   {
-    "name": "foo-module-name",
-    "install": "npm-install-retry --wait 500 --attempts 10",
-    "installAddWord": "--"
+    "name": "packageA",
+    "postinstall": "npm run update"
+  }, {
+    "name": "packageB"
   }
 ]
 ```
-This will result in `npm-install-retry --wait 500 --attempts 10 -- my-module` for first step.
+If specified this command will run first before pretesting the old version of lib (if pretest isn't disabled), then 
+after installing current version of lib to dependent package. You can use {{CURRENT_MODULE_DIR}} variable here which 
+will be replaced with a path to current module: 
+```
+[
+  {
+    "name": "packageA",
+    "postinstall": "{{CURRENT_MODULE_DIR}}/install-all-deps.sh",
+  }
+]
+```
 
 ### Pre-testing with previous package version
 By default dont-break first tests dependent module with its published version of current module, to make sure that it 
@@ -248,25 +261,6 @@ specify {"currentModuleInstall": "npm-link"}:
 }
 ```
 Default value is {"currentModuleInstall": "npm-install"}. 
-
-### Post-install command
-
-Before testing the dependent package dont-break installs its dev dependencies via `npm install` command run from the
-dependency directory. If you need something more you can specify it via "postinstall" config parameter like this:
-```
-[
-  {
-    "name": "packageA",
-    "postinstall": "npm run update",
-    "test": "dont-break-tests-with-my-package.sh"
-  }, {
-    "name": "packageB",
-    "test": "dont-break-tests-with-my-package.sh"
-  }
-]
-```
-If specified this command will run first before pretesting the old version of lib (if pretest isn't disabled), then 
-after installing current version of lib to dependent package.  
  
 ### Installation timeout
 You can specify a longer installation time out, in seconds, using CLI option

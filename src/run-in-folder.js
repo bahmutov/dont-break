@@ -13,6 +13,7 @@ function runInFolder (folder, command, options) {
 
   return chdir.to(folder)
     .then(function () {
+      console.log(`running "${command}" from ${folder}`)
       return npmTest(command)
     })
     .then(function () {
