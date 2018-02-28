@@ -140,7 +140,12 @@ function installCurrentModuleToDependent (sourceFolder, dependentFolder, current
   debug('testing the current module in %s', dependentFolder)
   debug('current module folder %s', sourceFolder)
 
-  if (_.indexOf(['npm-link', 'yarn-link'], currentModuleInstallMethod) >= 0) {
+  if (currentModuleInstallMethod === 'npm-install') {
+    return install({ prefix: dependentFolder, name: sourceFolder })
+      .then(function () {
+        return dependentFolder
+      })
+  } else {
     var pkgName = currentPackageName()
     var linkCmd = currentModuleInstallMethod.replace('-', ' ')
     return linkCurrentModule(sourceFolder, linkCmd)
@@ -151,11 +156,6 @@ function installCurrentModuleToDependent (sourceFolder, dependentFolder, current
         })
       })
       .finally(chdir.from)
-      .then(function () {
-        return dependentFolder
-      })
-  } else {
-    return install({ prefix: dependentFolder, name: sourceFolder })
       .then(function () {
         return dependentFolder
       })
@@ -182,14 +182,15 @@ function getDependentVersion (pkg, name) {
   }
 }
 
-function postInstallInFolder (command, folder) {
+function postInstallInFolder (dependentFolder, command, sourceFolder) {
   if (command) {
-    return runInFolder(folder, command, {
+    command = command.replace('$CURRENT_MODULE_DIR', sourceFolder)
+    return runInFolder(dependentFolder, command, {
       success: 'postinstall succeeded',
       failure: 'postinstall did not work'
     })
   } else {
-    return folder
+    return dependentFolder
   }
 }
 
@@ -204,15 +205,10 @@ function testDependent (options, dependent, config) {
 
   dependent = Object.assign({pretest: true, currentModuleInstall: 'npm-install'}, config, dependent)
   moduleTestCommand = dependent.test
-  modulePostinstallCommand = dependent.postinstall
+  modulePostinstallCommand = dependent.postinstall || 'npm install'
   testWithPreviousVersion = dependent.pretest
   currentModuleInstallMethod = dependent.currentModuleInstall
   var dependentInstall = dependent.install
-  var installAddWord = dependent.installAddWord
-  if (dependentInstall === 'yarn') {
-    installAddWord = installAddWord || 'add'
-  }
-  installAddWord = installAddWord || ''
 
   dependent = dependent.name
 
@@ -226,12 +222,7 @@ function testDependent (options, dependent, config) {
       // simple repo installation
       return toFolder
     } else {
-      // it was NPM install
-      var parts = [toFolder]
-      if (!dependentInstall) {
-        parts.push('lib')
-      }
-      return join.apply(null, parts.concat(['node_modules', moduleName]))
+      return join(toFolder, 'node_modules', moduleName)
     }
   }
 
@@ -242,7 +233,11 @@ function testDependent (options, dependent, config) {
   moduleTestCommand = moduleTestCommand || DEFAULT_TEST_COMMAND
   var testModuleInFolder = _.partial(testInFolder, moduleTestCommand)
 
-  var pkg = require(join(process.cwd(), 'package.json'))
+  var cwd = process.cwd()
+  var pkg = require(join(cwd, 'package.json'))
+  process.env.CURRENT_MODULE_NAME = pkg.name
+  process.env.CURRENT_MODULE_DIR = cwd
+
   var depName = pkg.name + '-v' + pkg.version + '-against-' + moduleName
   var safeName = _.kebabCase(_.deburr(depName))
   debug('original name "%s", safe "%s"', depName, safeName)
@@ -255,13 +250,11 @@ function testDependent (options, dependent, config) {
   var installOptions = {
     name: moduleName,
     prefix: toFolder,
-    cmd: dependentInstall,
-    installAddWord: installAddWord
+    cmd: dependentInstall
   }
 
-  var postInstallModuleInFolder = _.partial(postInstallInFolder, modulePostinstallCommand)
+  var postInstallModuleInFolder = _.partialRight(postInstallInFolder, modulePostinstallCommand, cwd)
 
-  var cwd = process.cwd()
   var res = install(installOptions)
     .timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)
     .then(formFullFolderName)
@@ -282,16 +275,6 @@ function testDependent (options, dependent, config) {
         usageMessage,
         '\nwill test', pkg.name + '@' + pkg.version)
       return folder
-    })
-    .then(function installDependencies (folder) {
-      console.log('installing dev dependencies', folder)
-      return install({cmd: installOptions.cmd, prefix: folder}).then(function () {
-        return folder
-      }, function (err) {
-        console.error('Could not install dependencies in', folder)
-        console.error(err)
-        throw err
-      })
     })
 
   if (testWithPreviousVersion) {

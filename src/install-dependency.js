@@ -42,9 +42,8 @@ function install (options) {
       mkdirp.sync(options.prefix)
     }
     var cmd = options.cmd || 'npm install'
-    options.installAddWord = options.installAddWord || ''
     if (options.name) {
-      cmd = `${cmd} ${options.installAddWord} ${options.name}`
+      cmd = `${cmd} ${options.name}`
     }
     console.log('running "%s" install command in %s', cmd, options.prefix)
     return runInFolder(options.prefix, cmd, {
