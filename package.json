@@ -52,7 +52,7 @@
     "matchdep": "1.0.1",
     "mocha": "3.5.3",
     "next-update-travis": "^1.7.1",
-    "pre-git": "3.17.0",
+    "pre-git": "3.17.1",
     "semantic-release": "^6.3.6",
     "simple-commit-message": "3.3.2",
     "standard": "10.0.3"
