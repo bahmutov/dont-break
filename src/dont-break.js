@@ -257,7 +257,7 @@ function testDependent (options, dependent, config) {
   var installOptions = {
     name: moduleName,
     prefix: toFolder,
-    cmd: dependentInstall
+    cmd: expandCommandVars(dependentInstall)
   }
 
   var postInstallModuleInFolder = _.partialRight(postInstallInFolder, modulePostinstallCommand)
