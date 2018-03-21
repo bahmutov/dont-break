@@ -199,6 +199,9 @@ function testDependent (options, dependent, config) {
   process.env.CURRENT_MODULE_DIR = cwd
 
   function expandCommandVars (command) {
+    if (!command) {
+      return command
+    }
     command = command.replace('$CURRENT_MODULE_DIR', cwd)
     command = command.replace('$CURRENT_MODULE_NAME', pkg.name)
     return command
