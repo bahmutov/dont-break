@@ -223,7 +223,7 @@ function testDependent (options, dependent, config) {
     debug('current module folder %s', sourceFolder)
 
     var pkgName = currentPackageName()
-    if (['yarn-link', 'npm-link'].includes(currentModuleInstallMethod)) {
+    if (_.includes(['yarn-link', 'npm-link'], currentModuleInstallMethod)) {
       var linkCmd = currentModuleInstallMethod.replace('-', ' ')
       return linkCurrentModule(sourceFolder, linkCmd)
         .then(function () {
