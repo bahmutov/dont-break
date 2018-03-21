@@ -134,34 +134,6 @@ var linkCurrentModule = _.memoize(function (thisFolder, linkCmd) {
   })
 })
 
-function installCurrentModuleToDependent (sourceFolder, dependentFolder, currentModuleInstallMethod) {
-  la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
-
-  debug('testing the current module in %s', dependentFolder)
-  debug('current module folder %s', sourceFolder)
-
-  if (currentModuleInstallMethod === 'npm-install') {
-    return install({ prefix: dependentFolder, name: sourceFolder })
-      .then(function () {
-        return dependentFolder
-      })
-  } else {
-    var pkgName = currentPackageName()
-    var linkCmd = currentModuleInstallMethod.replace('-', ' ')
-    return linkCurrentModule(sourceFolder, linkCmd)
-      .then(function () {
-        return runInFolder(dependentFolder, `${linkCmd} ${pkgName}`, {
-          success: `linked ${pkgName}`,
-          failure: `linking ${pkgName} failed`
-        })
-      })
-      .finally(chdir.from)
-      .then(function () {
-        return dependentFolder
-      })
-  }
-}
-
 function getDependencyName (dependent) {
   if (isRepoUrl(dependent)) {
     debug('dependent is git repo url %s', dependent)
@@ -182,18 +154,6 @@ function getDependentVersion (pkg, name) {
   }
 }
 
-function postInstallInFolder (dependentFolder, command, sourceFolder) {
-  if (command) {
-    command = command.replace('$CURRENT_MODULE_DIR', sourceFolder)
-    return runInFolder(dependentFolder, command, {
-      success: 'postinstall succeeded',
-      failure: 'postinstall did not work'
-    })
-  } else {
-    return dependentFolder
-  }
-}
-
 function testDependent (options, dependent, config) {
   var moduleTestCommand
   var modulePostinstallCommand
@@ -203,7 +163,7 @@ function testDependent (options, dependent, config) {
     dependent = {name: dependent.trim()}
   }
 
-  dependent = Object.assign({pretest: true, currentModuleInstall: 'npm-install'}, config, dependent)
+  dependent = Object.assign({pretest: true, currentModuleInstall: 'npm install $CURRENT_MODULE_DIR'}, config, dependent)
   moduleTestCommand = dependent.test
   modulePostinstallCommand = dependent.postinstall || 'npm install'
   testWithPreviousVersion = dependent.pretest
@@ -238,6 +198,53 @@ function testDependent (options, dependent, config) {
   process.env.CURRENT_MODULE_NAME = pkg.name
   process.env.CURRENT_MODULE_DIR = cwd
 
+  function expandCommandVars (command) {
+    command = command.replace('$CURRENT_MODULE_DIR', cwd)
+    command = command.replace('$CURRENT_MODULE_NAME', pkg.name)
+    return command
+  }
+
+  function postInstallInFolder (dependentFolder, command) {
+    if (command) {
+      command = expandCommandVars(command)
+      return runInFolder(dependentFolder, command, {
+        success: 'postinstall succeeded',
+        failure: 'postinstall did not work'
+      })
+    } else {
+      return dependentFolder
+    }
+  }
+
+  function installCurrentModuleToDependent (sourceFolder, dependentFolder, currentModuleInstallMethod) {
+    la(check.unemptyString(dependentFolder), 'expected dependent folder', dependentFolder)
+
+    debug('testing the current module in %s', dependentFolder)
+    debug('current module folder %s', sourceFolder)
+
+    var pkgName = currentPackageName()
+    if (_.includes(['yarn-link', 'npm-link'], currentModuleInstallMethod)) {
+      var linkCmd = currentModuleInstallMethod.replace('-', ' ')
+      return linkCurrentModule(sourceFolder, linkCmd)
+        .then(function () {
+          return runInFolder(dependentFolder, `${linkCmd} ${pkgName}`, {
+            success: `linked ${pkgName}`,
+            failure: `linking ${pkgName} failed`
+          })
+        })
+        .finally(chdir.from)
+        .then(function () {
+          return dependentFolder
+        })
+    } else {
+      currentModuleInstallMethod = expandCommandVars(currentModuleInstallMethod)
+      return runInFolder(dependentFolder, `${currentModuleInstallMethod}`, {
+        success: `installed ${pkgName}`,
+        failure: `installing ${pkgName} failed`
+      })
+    }
+  }
+
   var depName = pkg.name + '-v' + pkg.version + '-against-' + moduleName
   var safeName = _.kebabCase(_.deburr(depName))
   debug('original name "%s", safe "%s"', depName, safeName)
@@ -253,7 +260,7 @@ function testDependent (options, dependent, config) {
     cmd: dependentInstall
   }
 
-  var postInstallModuleInFolder = _.partialRight(postInstallInFolder, modulePostinstallCommand, cwd)
+  var postInstallModuleInFolder = _.partialRight(postInstallInFolder, modulePostinstallCommand)
 
   var res = install(installOptions)
     .timeout(timeoutSeconds * 1000, 'install timed out for ' + moduleName)

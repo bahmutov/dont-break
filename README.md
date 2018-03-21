@@ -250,17 +250,16 @@ By default it equals to "test" command.
 ### Current module installation method
 
 To test dependent package dont-break installs current module inside the dependent package directory. By default it uses
-`cd $DEPENDENT_PACKAGE_DIR && npm install $CURRENT_MODULE_DIR`. Other options are 
-[npm-link](https://docs.npmjs.com/cli/link) and [yarn-link](https://yarnpkg.com/lang/en/docs/cli/link/). They can be 
-helpful in some cases, e.g. if you need to use `npm install` or `yarn` in postinstall command. To use `npm link` method 
-specify {"currentModuleInstall": "npm-link"}: 
+`npm install $CURRENT_MODULE_DIR`. You can enter your command there, e.g. `yarn add $CURRENT_MODULE_DIR`. There are 
+also pre-configured option options [npm-link](https://docs.npmjs.com/cli/link) and 
+[yarn-link](https://yarnpkg.com/lang/en/docs/cli/link/). They can be helpful in some cases, e.g. if you need to use 
+`npm install` or `yarn` in postinstall command. To use `npm link` method specify {"currentModuleInstall": "npm-link"}: 
 ```
 {
   "currentModuleInstall": "npm-link",
   "projects": ["packageA", "packageB"]
 }
 ```
-Default value is {"currentModuleInstall": "npm-install"}.
 
 ### Env vars exported to called scripts
 Following env vars are available for use in scripts called by executed steps: 
