@@ -199,6 +199,9 @@ function testDependent (options, dependent, config) {
   process.env.CURRENT_MODULE_DIR = cwd
 
   function expandCommandVars (command) {
+    if (!command) {
+      return command
+    }
     command = command.replace('$CURRENT_MODULE_DIR', cwd)
     command = command.replace('$CURRENT_MODULE_NAME', pkg.name)
     return command
@@ -257,7 +260,7 @@ function testDependent (options, dependent, config) {
   var installOptions = {
     name: moduleName,
     prefix: toFolder,
-    cmd: dependentInstall
+    cmd: expandCommandVars(dependentInstall)
   }
 
   var postInstallModuleInFolder = _.partialRight(postInstallInFolder, modulePostinstallCommand)
