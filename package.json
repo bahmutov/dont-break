@@ -43,7 +43,7 @@
     "rimraf": "2.6.2",
     "strip-json-comments": "2.0.1",
     "top-dependents": "1.0.0",
-    "update-notifier": "2.3.0"
+    "update-notifier": "2.4.0"
   },
   "devDependencies": {
     "git-issues": "1.3.1",
