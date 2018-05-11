@@ -5,7 +5,6 @@ var isRepoUrl = require('./is-repo-url')
 var debug = require('debug')('dont-break')
 var exists = require('fs').existsSync
 var rimraf = require('rimraf')
-var chdir = require('chdir-promise')
 
 var cloneRepo = require('ggit').cloneRepo
 var runInFolder = require('./run-in-folder')
@@ -19,38 +18,37 @@ function removeFolder (folder) {
 }
 
 function install (options) {
+  let cmd = options.cmd || 'npm install'
+  let res
+  if (!exists(options.prefix)) {
+    mkdirp.sync(options.prefix)
+  }
   if (isRepoUrl(options.name)) {
     debug('installing repo %s', options.name)
     removeFolder(options.prefix)
-    return q(cloneRepo({
+    res = q(cloneRepo({
       url: options.name,
       folder: options.prefix
     })).then(function () {
       console.log('cloned %s', options.name)
     })
-    .then(function () { return chdir.to(options.prefix) })
-    .then(function () {
-      console.log('running NPM install in %s', process.cwd())
-    })
     .catch(function (err) {
       console.error('smth went wrong', err)
       throw err
     })
-    .finally(chdir.from)
   } else {
-    if (!exists(options.prefix)) {
-      mkdirp.sync(options.prefix)
-    }
-    var cmd = options.cmd || 'npm install'
     if (options.name) {
       cmd = `${cmd} ${options.name}`
     }
-    console.log('running "%s" install command in %s', cmd, options.prefix)
+    res = Promise.resolve()
+  }
+
+  return res.then(function () {
     return runInFolder(options.prefix, cmd, {
       success: 'installing dependent module succeeded',
       failure: 'installing dependent module failed'
     })
-  }
+  })
 }
 
 module.exports = install

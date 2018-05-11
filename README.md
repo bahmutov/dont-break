@@ -155,7 +155,8 @@ overriden on project level as in case of "project-c" here.
   
 ### Execution flow overview
 Dont-break performs folowing steps for each dependent project:
-* Install the dependent project into temporary dir using the [specified command](#install-command)
+* Clone the dependent project repo into temporary dir using `git clone`, if dependent project is a Github repo url
+* Install the dependent project in temporary dir using the [specified command](#install-command)
 * Run [post-install](#post-install-command) command if [pre-test](#pre-testing-with-previous-package-version) is not disabled
 * [Pre-test](#pre-testing-with-previous-package-version) the dependent project if this is not disabled
 * [Install current module](#current-module-installation-method) into the dependent project
