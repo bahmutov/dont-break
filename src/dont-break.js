@@ -327,7 +327,7 @@ function dontBreakDependents (options, dependents) {
       projects: dependents
     }
   }
-  la(check.arrayOf(function(item) {
+  la(check.arrayOf(function (item) {
     return check.object(item) || check.string(item)
   }, dependents.projects), 'invalid dependents', dependents.projects)
   debug('dependents', dependents)
