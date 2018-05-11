@@ -40,7 +40,7 @@ function install (options) {
     if (options.name) {
       cmd = `${cmd} ${options.name}`
     }
-    res = Promise.resolve()
+    res = q([])
   }
 
   return res.then(function () {
