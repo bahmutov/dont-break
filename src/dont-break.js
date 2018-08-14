@@ -182,7 +182,11 @@ function testDependent (options, dependent, config) {
       // simple repo installation
       return toFolder
     } else {
-      return join(toFolder, 'node_modules', moduleName)
+      let scoped = moduleName.startsWith('@')
+      let idx = scoped ? 1 : 0
+      let moduleDir = moduleName.split('@')[idx]
+      moduleDir = scoped ? `@${moduleDir}` : moduleDir
+      return join(toFolder, 'node_modules', moduleDir)
     }
   }
 
