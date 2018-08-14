@@ -193,7 +193,16 @@ You can specify a custom install command per dependent module. By default it's `
   "bar-name"
 ]
 ```
-The name of dependent module will be added to given command, e.g. for above it will run `yarn add foo-module-name`. 
+The name of dependent module will be added to given command, e.g. for above it will run `yarn add foo-module-name`.
+You can specify desired version range of dependent module, too, like this:
+```
+[
+  {
+    "name": "foo-module-name@^1.0.1-pre.1"
+  },
+  "bar-name"
+]
+``` 
 
 ### Post-install command
 
