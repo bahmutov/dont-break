@@ -168,6 +168,7 @@ Sections below describe how you can customize these steps.
 ### Name
 
 Serves to identify the dependent module by either a NPM module name (possibly with scope and version range) or Github URL. 
+
 ```
 [
   {
@@ -179,7 +180,9 @@ Serves to identify the dependent module by either a NPM module name (possibly wi
   }
 ]
 ```
+
 The above config is equivalent to its shorter version:
+
 ```
 [
   "foo-module-name", "@my-scope/bar-module-name@^1.0.1-pre.1", "https://github.com/bahmutov/dont-break-bar"
@@ -215,7 +218,6 @@ You can specify a custom install command per dependent module. By default it's `
 ]
 ```
 The name of dependent module will be added to given command, e.g. for above it will run `yarn add foo-module-name`.
-``` 
 
 ### Post-install command
 
