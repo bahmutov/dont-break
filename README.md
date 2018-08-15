@@ -127,7 +127,7 @@ Project level:
     "test": "grunt test"
   },
   {
-    "name": "project-b",
+    "name": "https://github.com/bahmutov/dont-break-bar",
     "test": "grunt test"
   },
   {
@@ -142,7 +142,7 @@ Global level:
   "test": "grunt test",
   "projects": [
     "project-a", 
-    "project-b", 
+    "https://github.com/bahmutov/dont-break-bar", 
     {
       "name": "project-c",
       "test": "npm test:special"
@@ -164,6 +164,27 @@ Dont-break performs folowing steps for each dependent project:
 * [Test](#test-command) the dependent project
 
 Sections below describe how you can customize these steps.
+
+### Name
+
+Serves to identify the dependent module by either a NPM module name (possibly with scope and version range) or Github URL. 
+```
+[
+  {
+    "name": "foo-module-name"
+  }, {
+    "name": "@my-scope/bar-module-name@^1.0.1-pre.1"
+  }, {
+    "name": "https://github.com/bahmutov/dont-break-bar"
+  }
+]
+```
+The above config is equivalent to its shorter version:
+```
+[
+  "foo-module-name", "@my-scope/bar-module-name@^1.0.1-pre.1", "https://github.com/bahmutov/dont-break-bar"
+]
+```
 
 ### Test command
 
@@ -194,14 +215,6 @@ You can specify a custom install command per dependent module. By default it's `
 ]
 ```
 The name of dependent module will be added to given command, e.g. for above it will run `yarn add foo-module-name`.
-You can specify desired version range of dependent module, too, like this:
-```
-[
-  {
-    "name": "foo-module-name@^1.0.1-pre.1"
-  },
-  "bar-name"
-]
 ``` 
 
 ### Post-install command
