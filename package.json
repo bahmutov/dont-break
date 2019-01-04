@@ -40,7 +40,7 @@
     "os-tmpdir": "1.0.2",
     "q": "2.0.3",
     "quote": "0.4.0",
-    "rimraf": "2.6.2",
+    "rimraf": "2.6.3",
     "strip-json-comments": "2.0.1",
     "top-dependents": "1.0.0",
     "update-notifier": "2.5.0"
